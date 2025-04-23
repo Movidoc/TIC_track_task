@@ -20,6 +20,7 @@ import os
 import sys
 import datetime
 import time
+import numpy as np
 # from psychopy import parallel #conda install -k -c conda-forge psychopy
 import pygame as pg
 
@@ -36,7 +37,17 @@ log_filename = "experiment_log.csv" # Définissez le nom du fichier une seule fo
 # Port parallel
 # port = parallel.ParallelPort(0xdff8)
 
-baselineButtonPress = [] # Phase 0
+# Phase 0
+baselineButtonPress = []
+press_count = 0 # Counter for button presses
+total_required = 5 # Total number of button presses required
+
+# Phase 1
+start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
+end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
+duration_ms=10_000
+
+ 
 premonitoryUrges = [] # Phase 2
 cuedTics = [] # Phase 3
 selfInitiatedTics = [] # Phase 3
@@ -56,30 +67,57 @@ screen_width = screen_info.current_w
 screen_height = screen_info.current_h
 window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches the size of the entire screen
 font = pg.font.SysFont('Arial', 40)
-
+# -----------------------------------------------------------
 # --- Définition des Phases ---
+# -----------------------------------------------------------
 phase_configs = [
     {
         "id": "start_experiment", # Message initial
-        "instruction": "Nous allons maintenant commencer l'expérience EEG. \nSuivez attentivement les instructions qui apparaîtront à l'écran.",
+        "instruction": """Nous allons maintenant commencer l'expérience. \n
+        Suivez attentivement les instructions qui apparaîtront à l'écran.\n 
+        Appuyez sur la touche > pour continuer.""",
         "background_color": color_cream
     },
     {
-        "id": "phase0", # Activité motrice de base
-        "instruction": "Veuillez appuyer sur n'importe quel bouton avec votre index de la main non dominante 5 fois. \nà votre rythme, sans essayer de suivre un rythme ou un motif particulier.",
+        "id": "phase0", # Activité motrice de base - Instruction
+        "instruction": """Veuillez appuyer sur n'importe quel touche avec votre index \n
+        de la main non dominante 5 fois, à votre rythme. \n
+        Appuyez sur la touche > pour démarrer.""",
+        "background_color": color_cream
+    },
+    {
+        "id": "phase0a", # Activité motrice de base - Countdown
+        "instruction": """ Numbre de pressions de bouton restantes:  \n""",
+        "background_color": color_turquoise
+    },
+    {
+        "id": "phase1a", # EEG au repos, yeux fermées - Instruction
+        "instruction": """Veuillez vous détendre.\n
+        Vous allez passer 1 minute avec les yeux fermés, un ton vous indiquera le debut et la fin. \n
+        N'essayez pas de provoquer ou de supprimer vos tics intentionnellement. \n
+        Appuyez sur la touche > pour démarrer.
+        """,
+        "background_color": color_cream
+    },
+    {
+        "id": "phase1b", # EEG au repos, yeux fermées
+        "instruction": """ Fermez vous yeux, temps restant: \n""",
         "background_color": color_olive
     },
     {
-        "id": "phase1a", # EEG au repos, yeux fermées
-        "instruction": "Veuillez vous détendre tranquillement. \nVous allez passer 1 minute avec les yeux fermés, un ton vous indiquera le debut et la fin \nN'essayez pas de provoquer ou de supprimer vos tics intentionnellement.",
+        "id": "phase1c", # EEG au repos, yeux ouverts - Instruction
+        "instruction": """Veuillez vous détendre.\n
+        Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
+        l'écran changera automatiquement à la fin\n
+        N'essayez pas de provoquer ou de supprimer vos tics intentionnellement. \n,
+         Appuyez sur la touche > pour démarrer.""",
         "background_color": color_cream
     },
     {
-        "id": "phase1b", # EEG au repos, yeux ouverts
-        "instruction": "Veuillez vous détendre tranquillement.\nVeuillez regarder et fixer la croix à l'écran pendant 1 minute, l'écran changera automatiquement à la fin\nN'essayez pas de provoquer ou de supprimer vos tics intentionnellement.",
-        "background_color": color_cream
+        "id": "phase1d", # EEG au repos, yeux ouverts - Countdown
+        "instruction": """ Fermez vous yeux, temps restant: \n""",
+        "background_color": color_olive
     },
-
     {
         "id": "phase2", # Tics spontanés
         "instruction": "Veuillez vous détendre et laisser vos tics se produire naturellement.\nLorsque vous ressentez une envie prémonitoire, appuyez sur le bouton avec votre main dominante.\nNous allons enregistrer vos tics et vos envies.\n",
@@ -108,9 +146,10 @@ phase_configs = [
     }
 ]
 
+# -----------------------------------------------------------------
 # --- Fonctions d'Affichage Spécifiques aux Phases ---
-
-def display_phase(window, font, phase_config):
+# -----------------------------------------------------------------
+def display_instruction(window, font, phase_config):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
     # Load images
@@ -147,6 +186,73 @@ def display_phase(window, font, phase_config):
 
     pg.display.flip()
     return True # Indicate that the display happened
+
+def display_countdown(window, font, phase_config, current_count, total_required):
+    window.fill(phase_config.get("background_color", (0, 0, 0)))
+
+    label = "Nombre de pressions de bouton restants :"
+    label_surf = font.render(label, True, color_violet)
+    label_rect = label_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 60))
+    window.blit(label_surf, label_rect)
+    # Format countdown (e.g., "3/5")
+    countdown_text = f"{current_count}/{total_required}"
+    text_surface = font.render(countdown_text, True, color_cream)
+    text_rect = text_surface.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
+    
+    # Draw text
+    window.blit(text_surface, text_rect)
+    pg.display.flip()
+    return True # Indicate that the display happened
+
+def display_minute_countdown(window, font, phase_config):
+    
+    play_tones(start_seq)                   
+
+    start_ms   = pg.time.get_ticks()
+    duration   = 10_000# 60_000                     # 60 000 ms = 60 s
+    running_cd = True
+
+    while running_cd:
+        now_ms     = pg.time.get_ticks()
+        remaining  = max(0, duration - (now_ms - start_ms))
+        secs_total = remaining // 1000
+        mm_ss      = f"{secs_total // 60}:{secs_total % 60:02d}"
+
+        # --- dessin ---
+        window.fill(phase_config.get("background_color", (0, 0, 0)))
+        surf = font.render(mm_ss, True, color_cream)
+        rect = surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
+        window.blit(surf, rect)
+        pg.display.flip()
+
+        if remaining == 0:
+            running_cd = False
+        pg.time.delay(50)                   # ~20 fps
+
+    play_tones(end_seq)                    # ---------- fin -------------
+    pg.time.wait(400)                      # laisser jouer la dernière note
+   
+def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
+    """
+    sequence = [(freq1, dur1_ms), (freq2, dur2_ms), ...]
+    Chaque note est générée (sinusoïde 16-bit) puis lue aussitôt.
+    """
+    if not pg.mixer.get_init():
+        pg.mixer.init(frequency=sample_rate, size=-16, channels=1)
+
+    for freq, dur in sequence:
+        # Génération du sinus en mémoire
+        t = np.arange(int(sample_rate * dur / 1000))
+        samples = (
+            np.sin(2 * np.pi * freq * t / sample_rate) * (2**15 - 1)
+        ).astype(np.int16)
+
+        snd = pg.mixer.Sound(buffer=samples)
+        snd.set_volume(volume)
+        snd.play()
+
+        pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
+
 
 def log_keypress(event, keypress_data, current_phase_id, filename="keypress_log.csv"):
     """
@@ -257,29 +363,88 @@ def save_log_data(log_data_list, filename="experiment_log.csv"):
     except Exception as e:
         print(f"Error saving log data to '{filename}': {e}")
 
-# --- Main Experiment Loop ---
+# -----------------------------------------------------------------
+#  MAIN EXPERIMENTAL LOOP – sequential over phase_configs
+# -----------------------------------------------------------------
 keypress_data = []
-
-running = True
 current_phase_index = 0
+running = True
 
-while running:
-    current_phase_config = phase_configs[current_phase_index]
-    phase_id = current_phase_config["id"]
-
-    if phase_id == "start_experiment" or phase_id.startswith("phase"):
-        display_phase(window, font, current_phase_config) # First timestamp of the tasl
+while running and current_phase_index < len(phase_configs):
+    cfg = phase_configs[current_phase_index] 
+    phase_id = cfg["id"]
+    # ----------------  A) START-EXPERIMENT PHASE  -----------------
+    if phase_id == "start_experiment":
+        display_instruction(window, font, cfg) 
+        
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
-                    waiting_for_input = False
                 if event.type == pg.KEYDOWN:
                     log_keypress(event, keypress_data, 'current_phase_id')
                     waiting_for_input = False # Move to the next phase on any key press
+        current_phase_index += 1 # Move to the next phase
+    # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
+    elif phase_id == "phase0":
+        display_instruction(window, font, cfg)       
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False # Move to the next phase on any key press
+        current_phase_index += 1 # Move to the next phase   
+    
+    elif phase_id == "phase0a":
+        counting = True # Flag to indicate if we are counting button presses
+        
+        while counting and running:
+            display_countdown(window, font, cfg, press_count, total_required)
+            
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                elif event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, phase_id)
+                    press_count += 1
+                    if press_count > total_required:
+                        counting = False # Stop counting when the required number of presses is reached
+                        current_phase_index += 1 # Move to the next phase
+    # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
+    elif phase_id == "phase1a":
+        display_instruction(window, font, cfg) 
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False
+        current_phase_index += 1 # Move to the next phase 
+        
+    elif phase_id == "phase1b":                
+        display_minute_countdown(window, font, cfg) # 1 minute countdown
+        current_phase_index += 1 # Move to the next phase     
+        
+    elif phase_id == "phase1c":
+        display_instruction(window, font, cfg) 
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False
+        current_phase_index += 1
+               
     elif phase_id == "end_experiment":
-        display_phase(window, font, current_phase_config)
+        display_instruction(window, font, cfg)
         waiting_for_exit = True
         while waiting_for_exit and running:
             for event in pg.event.get():
@@ -291,11 +456,12 @@ while running:
                         running = False
                         waiting_for_exit = False
                     # You might want to add logic for other keys if the experiment can restart
+    
     else:
         print(f"Unknown phase ID: {phase_id}")
         current_phase_index += 1 # Avoid infinite loop
 
-    current_phase_index += 1 # Move to the next phase
+    
 
 pg.quit()
 
