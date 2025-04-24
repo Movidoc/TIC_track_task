@@ -36,17 +36,6 @@ log_filename = "experiment_log.csv" # Définissez le nom du fichier une seule fo
 
 # Port parallel
 # port = parallel.ParallelPort(0xdff8)
-
-# Phase 0
-baselineButtonPress = []
-press_count = 0 # Counter for button presses
-total_required = 5 # Total number of button presses required
-
-# Phase 1
-start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
-end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
-duration_ms=10_000
-
  
 premonitoryUrges = [] # Phase 2
 cuedTics = [] # Phase 3
@@ -67,6 +56,17 @@ screen_width = screen_info.current_w
 screen_height = screen_info.current_h
 window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches the size of the entire screen
 font = pg.font.SysFont('Arial', 40)
+
+# Phase 0
+baselineButtonPress = []
+press_count = 0 # Counter for button presses
+total_required = 5 # Total number of button presses required
+
+# Phase 1
+start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
+end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
+duration_ms=10_000
+font2 = pg.font.SysFont('Arial', 60)
 # -----------------------------------------------------------
 # --- Définition des Phases ---
 # -----------------------------------------------------------
@@ -187,7 +187,7 @@ def display_instruction(window, font, phase_config):
     pg.display.flip()
     return True # Indicate that the display happened
 
-def display_countdown(window, font, phase_config, current_count, total_required):
+def display_pushbutton_countdown(window, font, phase_config, current_count, total_required):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
     label = "Nombre de pressions de bouton restants :"
@@ -204,6 +204,27 @@ def display_countdown(window, font, phase_config, current_count, total_required)
     pg.display.flip()
     return True # Indicate that the display happened
 
+def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
+    """
+    sequence = [(freq1, dur1_ms), (freq2, dur2_ms), ...]
+    Chaque note est générée (sinusoïde 16-bit) puis lue aussitôt.
+    """
+    if not pg.mixer.get_init():
+        pg.mixer.init(frequency=sample_rate, size=-16, channels=1)
+
+    for freq, dur in sequence:
+        # Génération du sinus en mémoire
+        t = np.arange(int(sample_rate * dur / 1000))
+        samples = (
+            np.sin(2 * np.pi * freq * t / sample_rate) * (2**15 - 1)
+        ).astype(np.int16)
+
+        snd = pg.mixer.Sound(buffer=samples)
+        snd.set_volume(volume)
+        snd.play()
+
+        pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
+        
 def display_minute_countdown(window, font, phase_config):
     
     play_tones(start_seq)                   
@@ -231,28 +252,50 @@ def display_minute_countdown(window, font, phase_config):
 
     play_tones(end_seq)                    # ---------- fin -------------
     pg.time.wait(400)                      # laisser jouer la dernière note
-   
-def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
+
+def display_cross_minute_countdown(window, font, phase_config):
     """
-    sequence = [(freq1, dur1_ms), (freq2, dur2_ms), ...]
-    Chaque note est générée (sinusoïde 16-bit) puis lue aussitôt.
+    • Affiche un “+” géant au centre et le décompte mm:ss en haut.
+    • Les séquences start_seq / end_seq jouent au début et à la fin.
+    • duration_ms peut être raccourci (10_000 ms pour test, 60_000 ms prod).
     """
-    if not pg.mixer.get_init():
-        pg.mixer.init(frequency=sample_rate, size=-16, channels=1)
+    play_tones(start_seq)
+    
+    start_ms   = pg.time.get_ticks()
+    running_cd = True
 
-    for freq, dur in sequence:
-        # Génération du sinus en mémoire
-        t = np.arange(int(sample_rate * dur / 1000))
-        samples = (
-            np.sin(2 * np.pi * freq * t / sample_rate) * (2**15 - 1)
-        ).astype(np.int16)
+    while running_cd:
+        now_ms     = pg.time.get_ticks()
+        remaining  = max(0, duration_ms - (now_ms - start_ms))
+        secs_total = remaining // 1000
+        mm_ss      = f"{secs_total // 60}:{secs_total % 60:02d}"
 
-        snd = pg.mixer.Sound(buffer=samples)
-        snd.set_volume(volume)
-        snd.play()
+        # -- dessin --
+        window.fill(phase_config.get("background_color", (0, 0, 0)))
 
-        pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
+        # 1) petit compte à rebours en haut
+        timer_surf = font.render(mm_ss, True, color_cream)
+        timer_rect = timer_surf.get_rect(midtop=(window.get_width() // 2, 20))
+        window.blit(timer_surf, timer_rect)
 
+        # 2) gros “+” centré
+        plus_surf = font2.render("+", True, color_cream)
+        plus_rect = plus_surf.get_rect(center=(window.get_width() // 2,
+                                               window.get_height() // 2))
+        window.blit(plus_surf, plus_rect)
+
+        pg.display.flip()
+
+        # fin du compte à rebours
+        if remaining == 0:
+            running_cd = False
+
+        pg.time.delay(50)   # ~20 fps
+
+    # ----- bips de fin -----
+    play_tones(end_seq)
+    pg.time.wait(400)       # laisse jouer le dernier bip
+  
 
 def log_keypress(event, keypress_data, current_phase_id, filename="keypress_log.csv"):
     """
@@ -403,7 +446,7 @@ while running and current_phase_index < len(phase_configs):
         counting = True # Flag to indicate if we are counting button presses
         
         while counting and running:
-            display_countdown(window, font, cfg, press_count, total_required)
+            display_pushbutton_countdown(window, font, cfg, press_count, total_required)
             
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -442,7 +485,11 @@ while running and current_phase_index < len(phase_configs):
                     log_keypress(event, keypress_data, 'current_phase_id')
                     waiting_for_input = False
         current_phase_index += 1
-               
+
+    elif phase_id == "phase1d":                
+        display_cross_minute_countdown(window, font2, cfg) #  minute countdown
+        current_phase_index += 1 # Move to the next phase  
+                      
     elif phase_id == "end_experiment":
         display_instruction(window, font, cfg)
         waiting_for_exit = True
