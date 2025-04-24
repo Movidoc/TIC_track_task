@@ -59,14 +59,24 @@ font = pg.font.SysFont('Arial', 40)
 
 # Phase 0
 baselineButtonPress = []
-press_count = 0 # Counter for button presses
-total_required = 5 # Total number of button presses required
+key_press_count = 0 # Counter for button presses
+key_total_required = 5 # Total number of button presses required
+phase0_label = "Nombre de pressions de bouton restants :"
 
 # Phase 1
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
 duration_ms=10_000
 font2 = pg.font.SysFont('Arial', 60)
+
+# Phase 2
+phase2_duration_ms = 10_000 # 1 minute = 60_000 countdown
+
+# Phase 3 
+phase3_label = "Nombre tic imités restants :"
+mimicked_tic_count = 0 # Counter for button presses
+mimicked_tic_total_required = 5 # Total number of button presses required
+
 # -----------------------------------------------------------
 # --- Définition des Phases ---
 # -----------------------------------------------------------
@@ -119,20 +129,45 @@ phase_configs = [
         "background_color": color_olive
     },
     {
-        "id": "phase2", # Tics spontanés
-        "instruction": "Veuillez vous détendre et laisser vos tics se produire naturellement.\nLorsque vous ressentez une envie prémonitoire, appuyez sur le bouton avec votre main dominante.\nNous allons enregistrer vos tics et vos envies.\n",
-        "background_color": color_turquoise
-    },
-
-    {
-        "id": "phase3", # Tics mimicking
-        "instruction": "Veuillez imiter volontairement vos tics les plus fréquents.\nConcentrez-vous sur l'imitation de 1 ou 2 de vos tics les plus représentatifs.\n",
+        "id": "phase2a", # Tics spontanés - Instruction
+        "instruction": 
+        """1. Asseyez-vous confortablement et détendez-vous.\n
+        2. Laissez vos tics se manifester naturellement : ne les retenez pas, ne les provoquez pas.\n
+        3. Dès que vous sentez une envie prémonitoire, appuyez sur la barre d’espace avec votre main dominante.""",
         "background_color": color_cream
     },
     {
-        "id": "phase4a", # Suppression des Tics
-        "instruction": "Veuillez essayer activement de supprimer vos tics.\nDès que vous ressentez une envie de tic et que vous essayez de la supprimer, appuyez sur le bouton avec votre main non dominante.\nAprès chaque période de suppression, vous devrez évaluer votre succès ou votre effort. \n",
+        "id": "phase2b", # Tics spontanés
+        "instruction": 
+        """ Laissez vos tics se manifester naturellement""",
         "background_color": color_violet
+    },    
+    {
+        "id": "phase3a", # Tics mimicking - Instruction
+        "instruction": """
+        1. Asseyez-vous confortablement et détendez-vous.\n
+        2. Vous allez imiter, de façon volontaire, vos tics les plus fréquents et représentatifs.\n
+        3. Lorsque vous êtes prêt à en imiter un : appuyez une fois sur la barre d’espace avec votre main dominante, puis exécutez le tic.\n
+        4. Dès que l’imitation est terminée : appuyez à nouveau sur la barre d’espace.\n
+        5. Répétez ce cycle jusqu’à avoir enregistré 10 tics imités.\n  
+        6. Si un tic spontané survient, n’appuyez pas sur la barre d’espace\n
+        Appuyez sur la touche > pour démarrer.""",   
+        "background_color": color_cream
+    },
+    {
+        "id": "phase3b", #Tics mimicking
+        "instruction": 
+        """ Imitation volontaire des tics – 10 répétitions""",
+        "background_color": color_violet
+    },  
+    {
+        "id": "phase4a", # Suppression des Tics
+        "instruction": 
+            """1. Asseyez-vous confortablement et détendez-vous.\n
+            2. Veuillez essayer activement de supprimer ou retenir vos tics pendant 10 min.\n
+            3. Dès que vous sentez une envie prémonitoire et que vous essayez de la supprimer, appuyez sur la barre d’espace avec votre main dominante.\n
+            Appuyez sur la touche > pour démarrer.""",
+        "background_color": color_cream
     },
     {
         "id": "phase4b", # Questionnaire sur la suppression des Tics
@@ -187,10 +222,9 @@ def display_instruction(window, font, phase_config):
     pg.display.flip()
     return True # Indicate that the display happened
 
-def display_pushbutton_countdown(window, font, phase_config, current_count, total_required):
+def display_pushbutton_countdown(window, font, phase_config, current_count, total_required, label):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
-    label = "Nombre de pressions de bouton restants :"
     label_surf = font.render(label, True, color_violet)
     label_rect = label_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 60))
     window.blit(label_surf, label_rect)
@@ -225,12 +259,11 @@ def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
 
         pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
         
-def display_minute_countdown(window, font, phase_config):
+def display_minute_countdown(window, font, phase_config, duration):
     
     play_tones(start_seq)                   
 
-    start_ms   = pg.time.get_ticks()
-    duration   = 10_000# 60_000                     # 60 000 ms = 60 s
+    start_ms   = pg.time.get_ticks()                   # 60 000 ms = 60 s
     running_cd = True
 
     while running_cd:
@@ -296,7 +329,6 @@ def display_cross_minute_countdown(window, font, phase_config):
     play_tones(end_seq)
     pg.time.wait(400)       # laisse jouer le dernier bip
   
-
 def log_keypress(event, keypress_data, current_phase_id, filename="keypress_log.csv"):
     """
     Logs a key press event with a high-precision timestamp and the current task phase
@@ -446,15 +478,15 @@ while running and current_phase_index < len(phase_configs):
         counting = True # Flag to indicate if we are counting button presses
         
         while counting and running:
-            display_pushbutton_countdown(window, font, cfg, press_count, total_required)
+            display_pushbutton_countdown(window, font, cfg, key_press_count, key_total_required, phase0_label) # Display the countdown
             
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
                 elif event.type == pg.KEYDOWN:
                     log_keypress(event, keypress_data, phase_id)
-                    press_count += 1
-                    if press_count > total_required:
+                    key_press_count += 1
+                    if key_press_count > key_total_required:
                         counting = False # Stop counting when the required number of presses is reached
                         current_phase_index += 1 # Move to the next phase
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
@@ -471,7 +503,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase 
         
     elif phase_id == "phase1b":                
-        display_minute_countdown(window, font, cfg) # 1 minute countdown
+        display_minute_countdown(window, font, cfg, duration_ms) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase     
         
     elif phase_id == "phase1c":
@@ -489,7 +521,64 @@ while running and current_phase_index < len(phase_configs):
     elif phase_id == "phase1d":                
         display_cross_minute_countdown(window, font2, cfg) #  minute countdown
         current_phase_index += 1 # Move to the next phase  
-                      
+    # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
+    elif phase_id == "phase2a":
+        display_instruction(window, font, cfg) 
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False
+        current_phase_index += 1
+    elif phase_id == "phase2b":                
+        display_minute_countdown(window, font, cfg, phase2_duration_ms) # 1 minute countdown
+        current_phase_index += 1 # Move to the next phase   
+    # ---------------- PHASE 3: MIMICKING TICS  -----------------
+    elif phase_id == "phase3a":
+        display_instruction(window, font, cfg) 
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False
+        current_phase_index += 1
+        
+    elif phase_id == "phase3b":
+        counting = True # Flag to indicate if we are counting button presses
+        
+        while counting and running:
+            display_pushbutton_countdown(window, font, cfg, mimicked_tic_count, mimicked_tic_total_required, phase3_label) # Display the countdown
+            
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                elif event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, phase_id)
+                    mimicked_tic_count += 1
+                    if mimicked_tic_count > mimicked_tic_total_required:
+                        counting = False # Stop counting when the required number of presses is reached
+                        current_phase_index += 1 # Move to the next phase
+    # ---------------- PHASE 4: TIC SUPRESSION  -----------------
+    elif phase_id == "phase4a":
+        display_instruction(window, font, cfg) 
+        waiting_for_input = True
+        while waiting_for_input and running:
+            for event in pg.event.get():
+                if event.type == pg.K_ESCAPE:
+                    running = False
+                if event.type == pg.KEYDOWN:
+                    log_keypress(event, keypress_data, 'current_phase_id')
+                    waiting_for_input = False
+        current_phase_index += 1
+    # ---------------- PHASE 5: QUESTIONS  -----------------
+    
+    # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
         display_instruction(window, font, cfg)
         waiting_for_exit = True
@@ -503,7 +592,8 @@ while running and current_phase_index < len(phase_configs):
                         running = False
                         waiting_for_exit = False
                     # You might want to add logic for other keys if the experiment can restart
-    
+
+      
     else:
         print(f"Unknown phase ID: {phase_id}")
         current_phase_index += 1 # Avoid infinite loop
