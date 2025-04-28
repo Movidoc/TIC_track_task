@@ -16,6 +16,7 @@
 # Phase 4: Tic Suppression
 
 # Import necessary libraries
+import csv
 import os
 import sys
 import datetime
@@ -55,7 +56,7 @@ screen_info = pg.display.Info()
 screen_width = screen_info.current_w
 screen_height = screen_info.current_h
 window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches the size of the entire screen
-font = pg.font.SysFont('Arial', 40)
+
 
 # Phase 0
 baselineButtonPress = []
@@ -67,7 +68,7 @@ phase0_label = "Nombre de pressions de bouton restants :"
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
 duration_ms=10_000
-font2 = pg.font.SysFont('Arial', 60)
+
 
 # Phase 2
 phase2_duration_ms = 10_000 # 1 minute = 60_000 countdown
@@ -83,20 +84,23 @@ mimicked_tic_total_required = 5 # Total number of button presses required
 phase_configs = [
     {
         "id": "start_experiment", # Message initial
+        "title_text" : "Début d'expérience",
         "instruction": """Nous allons maintenant commencer l'expérience. \n
         Suivez attentivement les instructions qui apparaîtront à l'écran.\n 
-        Appuyez sur la touche > pour continuer.""",
+        Appuyez sur la touche ➡ pour continuer.""",
         "background_color": color_cream
     },
     {
         "id": "phase0", # Activité motrice de base - Instruction
-        "instruction": """Veuillez appuyer sur n'importe quel touche avec votre index \n
-        de la main non dominante 5 fois, à votre rythme. \n
-        Appuyez sur la touche > pour démarrer.""",
+        "title_text" : "Activité motrice de base",
+        "instruction": """Veuillez appuyer sur sur touche "D" avec votre index \n
+        de la main dominante 5 fois, à votre rythme. \n
+        Appuyez sur la touche ➡ pour démarrer.""",
         "background_color": color_cream
     },
     {
         "id": "phase0a", # Activité motrice de base - Countdown
+        "title_text" : "Activité motrice de base",
         "instruction": """ Numbre de pressions de bouton restantes:  \n""",
         "background_color": color_turquoise
     },
@@ -105,7 +109,7 @@ phase_configs = [
         "instruction": """Veuillez vous détendre.\n
         Vous allez passer 1 minute avec les yeux fermés, un ton vous indiquera le debut et la fin. \n
         N'essayez pas de provoquer ou de supprimer vos tics intentionnellement. \n
-        Appuyez sur la touche > pour démarrer.
+        Appuyez sur la touche ➡ pour démarrer.
         """,
         "background_color": color_cream
     },
@@ -184,47 +188,68 @@ phase_configs = [
 # -----------------------------------------------------------------
 # --- Fonctions d'Affichage Spécifiques aux Phases ---
 # -----------------------------------------------------------------
-def display_instruction(window, font, phase_config):
+def display_instruction(window, phase_config):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
     # Load images
     try:
-        image1 = pg.image.load(image_file1).convert_alpha()
-        image2 = pg.image.load(image_file2).convert_alpha()
+        image1 = pg.image.load(image_file1).convert_alpha() # Movidoc letters
+        image2 = pg.image.load(image_file2).convert_alpha() # Movidoc logo	
     except pg.error as e:
         print(f"Error loading image: {e}")
         return True # Continue to display text even if images fail
 
     # Resize image2
-    new_width = window.get_width() // 6
+    new_width = window.get_width() // 10  # Control image size here
     aspect_ratio = image2.get_height() / image2.get_width()
-    new_height = int(new_width * aspect_ratio)
-    image2 = pg.transform.scale(image2, (new_width, new_height))
+    image2 = pg.transform.scale(image2, (new_width, int(new_width * aspect_ratio)))
+    
+    # Set spacing values (easy to adjust)
+    spacing_after_image1 = 40
+    spacing_after_title = 40
+    spacing_after_image2 = 80
+    line_spacing = 30  # space between instruction lines
+    
+    # Create title text
+    font_title = pg.font.SysFont('Segoe UI Symbol', 36, bold=True)  
+    title_text = phase_config.get("title_text", "")
+    title_surface = font_title.render(title_text, True, color_olive)  
+    
+    # Start vertical position
+    center_x = window.get_width() // 2
+    current_y = 100  # Start 100px from the top (you can control this too)
 
-    # Get image dimensions and positions
-    image1_y_offset = 100  # Adjust this value to lower the image (increase to lower)
-    image1_rect = image1.get_rect(center=(window.get_width() // 2, image1.get_height() // 2 + image1_y_offset))
-    image2_rect = image2.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
-
-    # Blit (draw) images
+    # Draw image1
+    image1_rect = image1.get_rect(center=(center_x, current_y + image1.get_height() // 2))
     window.blit(image1, image1_rect)
+    current_y = image1_rect.bottom + spacing_after_image1
+
+    # Draw title
+    title_rect = title_surface.get_rect(center=(center_x, current_y + title_surface.get_height() // 2))
+    window.blit(title_surface, title_rect)
+    current_y = title_rect.bottom + spacing_after_title
+
+    # Draw image2
+    image2_rect = image2.get_rect(center=(center_x, current_y + image2.get_height() // 2))
     window.blit(image2, image2_rect)
+    current_y = image2_rect.bottom + spacing_after_image2
 
     # Display text below image 2
+    font = pg.font.SysFont("Segoe UI Symbol", 32)
     instruction_text = phase_config.get("instruction", "")
     messages = instruction_text.split('\n')
-    text_y_start = image2_rect.bottom + 100 # Start text below image 2 with some spacing
     for i, message in enumerate(messages):
-        text_surface = font.render(message, True, color_violet)
-        text_rect = text_surface.get_rect(center=(window.get_width() // 2, text_y_start + i * 40)) # Adjust vertical spacing
+        text_surface = font.render(message.strip(), True, color_violet)
+        text_rect = text_surface.get_rect(center=(center_x, current_y + i * line_spacing)) 
         window.blit(text_surface, text_rect)
 
     pg.display.flip()
     return True # Indicate that the display happened
 
-def display_pushbutton_countdown(window, font, phase_config, current_count, total_required, label):
+def display_pushbutton_countdown(window, phase_config, current_count, total_required, label):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
+    font = pg.font.SysFont("Segoe UI Symbol", 32)
     label_surf = font.render(label, True, color_violet)
     label_rect = label_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 60))
     window.blit(label_surf, label_rect)
@@ -259,7 +284,7 @@ def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
 
         pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
         
-def display_minute_countdown(window, font, phase_config, duration):
+def display_minute_countdown(window, phase_config, duration):
     
     play_tones(start_seq)                   
 
@@ -273,6 +298,7 @@ def display_minute_countdown(window, font, phase_config, duration):
         mm_ss      = f"{secs_total // 60}:{secs_total % 60:02d}"
 
         # --- dessin ---
+        font = pg.font.SysFont("Segoe UI Symbol", 32)
         window.fill(phase_config.get("background_color", (0, 0, 0)))
         surf = font.render(mm_ss, True, color_cream)
         rect = surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
@@ -286,7 +312,7 @@ def display_minute_countdown(window, font, phase_config, duration):
     play_tones(end_seq)                    # ---------- fin -------------
     pg.time.wait(400)                      # laisser jouer la dernière note
 
-def display_cross_minute_countdown(window, font, phase_config):
+def display_cross_minute_countdown(window, phase_config):
     """
     • Affiche un “+” géant au centre et le décompte mm:ss en haut.
     • Les séquences start_seq / end_seq jouent au début et à la fin.
@@ -307,11 +333,13 @@ def display_cross_minute_countdown(window, font, phase_config):
         window.fill(phase_config.get("background_color", (0, 0, 0)))
 
         # 1) petit compte à rebours en haut
+        font = pg.font.SysFont("Segoe UI Symbol", 32)
         timer_surf = font.render(mm_ss, True, color_cream)
         timer_rect = timer_surf.get_rect(midtop=(window.get_width() // 2, 20))
         window.blit(timer_surf, timer_rect)
 
         # 2) gros “+” centré
+        font2 = pg.font.SysFont("Segoe UI Symbol", 60)
         plus_surf = font2.render("+", True, color_cream)
         plus_rect = plus_surf.get_rect(center=(window.get_width() // 2,
                                                window.get_height() // 2))
@@ -329,223 +357,177 @@ def display_cross_minute_countdown(window, font, phase_config):
     play_tones(end_seq)
     pg.time.wait(400)       # laisse jouer le dernier bip
   
-def log_keypress(event, keypress_data, current_phase_id, filename="keypress_log.csv"):
+def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
     """
     Logs a key press event with a high-precision timestamp and the current task phase
     to a list and optionally saves the data to a CSV file.
-
-    Args:
-        event (pygame.event.Event): The pygame.KEYDOWN event object.
-        keypress_data (list): A list to store the key press data (dictionaries).
-        current_phase_id (str): The ID of the current task phase.
-        filename (str, optional): The name of the CSV file to save to.
-                                     Defaults to "keypress_log.csv".
+    
+    args:
+        event_type (str): Type of event (e.g., 'keypress', 'instruction_display', etc.)
+        event_value (str): Value associated with the event (e.g., righ_arrow_key, D_key, F_press, start_experiment, etc.)
+        current_phase_id (str): ID of the current phase in the experiment
+        filename (str, optional): Name of the CSV file to save the log. Defaults to "event_log.csv".
+   
     """
-    timestamp_seconds = time.perf_counter()
-    key_pressed = pg.key.name(event.key)
-    timestamp_datetime = datetime.datetime.now().isoformat()
-
-    # Store the timestamp, key press, and current phase
-    keypress_data.append({
-        'timestamp_seconds': timestamp_seconds,
-        'key': key_pressed,
-        'timestamp_datetime': timestamp_datetime,
-        'task_phase': current_phase_id  # Added task phase
+    # Relative time since experiment started
+    elapsed_time = time.perf_counter() - experiment_start_time
+    
+    event_log.append({
+        'elapsed_time_seconds': round(elapsed_time, 6),
+        'event_type': event_type,
+        'event_value': event_value,
+        'task_phase': current_phase_id
     })
 
-    print(f"Key '{key_pressed}' pressed at {timestamp_seconds:.6f} seconds in phase '{current_phase_id}'")
+    print(f"Event '{event_type}' - '{event_value}' at {elapsed_time:.6f}s in phase '{current_phase_id}'")
 
-    # Optionally, save to CSV after each key press
-    save_keypress_log(keypress_data, filename)
+    save_event_log(filename)
 
-def save_keypress_log(keypress_data, filename="keypress_log.csv"):
+def save_event_log( filename="keypress_log.csv"):
     """
-    Saves the key press data to a CSV file. Includes the 'task_phase' field.
+    Saves the key press data to a CSV file. 
 
-    Args:
-        keypress_data (list): A list of dictionaries containing key press information.
-        filename (str, optional): The name of the CSV file to save to.
-                                     Defaults to "keypress_log.csv".
     """
-    if not keypress_data:
+    if not event_log:
         return
 
     file_exists = os.path.isfile(filename)
 
     try:
         with open(filename, 'a', newline='') as csvfile:
-            fieldnames = keypress_data[0].keys()
+            fieldnames = event_log[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             if not file_exists:
                 writer.writeheader()
 
-            writer.writerow(keypress_data[-1])
+            writer.writerow(event_log[-1])
     except Exception as e:
-        print(f"Error saving keypress log to '{filename}': {e}")
-
-def log_event(event_name, event_data, log_data_list, filename="experiment_log.csv"):
-    """
-    Logs a specific event (e.g., phase start) with a high-precision timestamp
-    and associated data to a list and optionally saves it to a CSV file.
-
-    Args:
-        event_name (str): The name of the event (e.g., "phase_start", "stimulus_onset").
-        event_data (dict): A dictionary containing data specific to this event
-                           (e.g., {'phase_id': 'start_experiment'}).
-        log_data_list (list): A list to store the event data (dictionaries).
-        filename (str, optional): The name of the CSV file to save to.
-                                     Defaults to "experiment_log.csv".
-    """
-    timestamp_seconds = time.perf_counter()
-    timestamp_datetime = datetime.datetime.now().isoformat()
-
-    log_entry = {
-        'timestamp_seconds': timestamp_seconds,
-        'timestamp_datetime': timestamp_datetime,
-        'event': event_name,
-        **event_data  # Include event-specific data by unpacking the dictionary
-    }
-
-    log_data_list.append(log_entry)
-    print(f"Event '{event_name}' logged at {timestamp_seconds:.6f} seconds with data: {event_data}")
-
-    save_log_data(log_data_list, filename)
-
-def save_log_data(log_data_list, filename="experiment_log.csv"):
-    """
-    Saves the logged event data to a CSV file.
-
-    Args:
-        log_data_list (list): A list of dictionaries containing event information.
-        filename (str, optional): The name of the CSV file to save to.
-                                     Defaults to "experiment_log.csv".
-    """
-    if not log_data_list:
-        return
-
-    file_exists = os.path.isfile(filename)
-
-    try:
-        with open(filename, 'a', newline='') as csvfile:
-            fieldnames = log_data_list[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-            if not file_exists:
-                writer.writeheader()
-
-            writer.writerow(log_data_list[-1])
-    except Exception as e:
-        print(f"Error saving log data to '{filename}': {e}")
-
+        print(f"Error saving event log to '{filename}': {e}")
 # -----------------------------------------------------------------
 #  MAIN EXPERIMENTAL LOOP – sequential over phase_configs
 # -----------------------------------------------------------------
 keypress_data = []
 current_phase_index = 0
 running = True
+event_log = []  # List to store event logs
+
+experiment_start_time = time.perf_counter()  # Start time of the experiment
 
 while running and current_phase_index < len(phase_configs):
     cfg = phase_configs[current_phase_index] 
     phase_id = cfg["id"]
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg)
+        log_event('instruction_display', 'welcome_message', phase_id) 
         
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
+                if event.type == pg.QUIT:
                     running = False
-                if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
-                    waiting_for_input = False # Move to the next phase on any key press
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_RIGHT:
+                    log_event('key_press', pg.key.name(event.key), phase_id)
+                    waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
+                else:
+                    pass  # Ignore all other keys
         current_phase_index += 1 # Move to the next phase
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase0":
-        display_instruction(window, font, cfg)       
+        display_instruction(window, cfg) 
+        log_event('instruction_display', 'instruction_message', phase_id) 
+              
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
+                if event.type == pg.QUIT:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
-                    waiting_for_input = False # Move to the next phase on any key press
+                    if event.key == pg.K_RIGHT:
+                        log_event('key_press', pg.key.name(event.key), phase_id)
+                        waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
+                    else:
+                        pass  # Ignore all other keys
         current_phase_index += 1 # Move to the next phase   
     
     elif phase_id == "phase0a":
         counting = True # Flag to indicate if we are counting button presses
+        log_event('information_display', 'counter_starts', phase_id) 
         
         while counting and running:
-            display_pushbutton_countdown(window, font, cfg, key_press_count, key_total_required, phase0_label) # Display the countdown
+            display_pushbutton_countdown(window, cfg, key_press_count, key_total_required, phase0_label) # Display the countdown
             
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
                 elif event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, phase_id)
-                    key_press_count += 1
+                    if event.key == pg.K_d:
+                        log_event('key_press', pg.key.name(event.key), phase_id)
+                        key_press_count += 1
+                    else:
+                        pass  # Ignore all other keys
                     if key_press_count > key_total_required:
                         counting = False # Stop counting when the required number of presses is reached
                         current_phase_index += 1 # Move to the next phase
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase1a":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg) 
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
+                    log_event(event, keypress_data, phase_id)
                     waiting_for_input = False
         current_phase_index += 1 # Move to the next phase 
         
     elif phase_id == "phase1b":                
-        display_minute_countdown(window, font, cfg, duration_ms) # 1 minute countdown
+        display_minute_countdown(window, cfg, duration_ms) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase     
         
     elif phase_id == "phase1c":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg) 
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
+                    log_event(event, keypress_data, phase_id)
                     waiting_for_input = False
         current_phase_index += 1
 
     elif phase_id == "phase1d":                
-        display_cross_minute_countdown(window, font2, cfg) #  minute countdown
+        display_cross_minute_countdown(window, cfg) #  minute countdown
         current_phase_index += 1 # Move to the next phase  
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
     elif phase_id == "phase2a":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg) 
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
+                    log_event(event, keypress_data, phase_id)
                     waiting_for_input = False
         current_phase_index += 1
     elif phase_id == "phase2b":                
-        display_minute_countdown(window, font, cfg, phase2_duration_ms) # 1 minute countdown
+        display_minute_countdown(window, cfg, phase2_duration_ms) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase   
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
     elif phase_id == "phase3a":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg) 
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
+                    log_event(event, keypress_data, phase_id)
                     waiting_for_input = False
         current_phase_index += 1
         
@@ -553,34 +535,34 @@ while running and current_phase_index < len(phase_configs):
         counting = True # Flag to indicate if we are counting button presses
         
         while counting and running:
-            display_pushbutton_countdown(window, font, cfg, mimicked_tic_count, mimicked_tic_total_required, phase3_label) # Display the countdown
+            display_pushbutton_countdown(window, cfg, mimicked_tic_count, mimicked_tic_total_required, phase3_label) # Display the countdown
             
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
                 elif event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, phase_id)
+                    log_event(event, keypress_data, phase_id)
                     mimicked_tic_count += 1
                     if mimicked_tic_count > mimicked_tic_total_required:
                         counting = False # Stop counting when the required number of presses is reached
                         current_phase_index += 1 # Move to the next phase
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
     elif phase_id == "phase4a":
-        display_instruction(window, font, cfg) 
+        display_instruction(window, cfg) 
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
                 if event.type == pg.K_ESCAPE:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_keypress(event, keypress_data, 'current_phase_id')
+                    log_event(event, keypress_data, phase_id)
                     waiting_for_input = False
         current_phase_index += 1
     # ---------------- PHASE 5: QUESTIONS  -----------------
     
     # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
-        display_instruction(window, font, cfg)
+        display_instruction(window, cfg)
         waiting_for_exit = True
         while waiting_for_exit and running:
             for event in pg.event.get():
