@@ -5578,3 +5578,263 @@ elapsed_time_seconds,event_type,event_value,task_phase
 7.126689,key_press,d,phase0a
 7.573657,key_press,d,phase0a
 8.18223,key_press,d,phase0a
+0.027373,instruction_display,welcome_message,start_experiment
+2.964033,key_press,right,start_experiment
+2.977398,instruction_display,instruction_message,phase0
+5.395305,key_press,right,phase0
+5.396448,information_display,counter_starts,phase0a
+7.867803,key_press,d,phase0a
+8.223161,key_press,d,phase0a
+8.446812,key_press,d,phase0a
+8.787352,key_press,d,phase0a
+0.196764,instruction_display,welcome_message,start_experiment
+3.061206,key_press,right,start_experiment
+3.07476,instruction_display,instruction_message,phase0
+9.908706,key_press,right,phase0
+9.910958,information_display,counter_starts,phase0a
+12.55245,key_press,d,phase0a
+13.24073,key_press,d,phase0a
+14.029081,key_press,d,phase0a
+14.812698,key_press,d,phase0a
+15.680562,key_press,d,phase0a
+16.534834,key_press,d,phase0a
+16.548649,instruction_display,instruction_message,phase1a
+37.708278,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1a
+135.788204,"<Event(768-KeyDown {'unicode': '\r', 'key': 13, 'mod': 4096, 'scancode': 40, 'window': None})>",[],phase1c
+147.196871,"<Event(768-KeyDown {'unicode': '\r', 'key': 13, 'mod': 4096, 'scancode': 40, 'window': None})>",[],phase2a
+158.54171,"<Event(768-KeyDown {'unicode': '\r', 'key': 13, 'mod': 4096, 'scancode': 40, 'window': None})>",[],phase3a
+158.54425,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase3a
+158.54623,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase3a
+158.548051,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase3a
+158.549639,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase3a
+158.551228,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase3a
+158.552747,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase3a
+158.555021,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+158.556951,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase3a
+158.558602,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase3a
+158.559967,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase3a
+158.561217,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase3a
+158.562596,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase3a
+158.564002,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase3a
+158.565512,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase3a
+158.566914,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase3a
+158.568319,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase3a
+158.569695,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+158.570888,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+174.359611,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+175.023248,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+175.304274,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+175.532582,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+175.743065,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+175.943967,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+176.155926,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase4a
+0.025753,instruction_display,welcome_message,start_experiment
+3.524759,key_press,right,start_experiment
+3.537919,instruction_display,instruction_message,phase0
+6.476246,key_press,right,phase0
+6.478436,information_display,counter_starts,phase0a
+15.031324,key_press,d,phase0a
+16.188352,key_press,d,phase0a
+16.709418,key_press,d,phase0a
+17.158633,key_press,d,phase0a
+17.579942,key_press,d,phase0a
+18.220036,key_press,d,phase0a
+18.239167,instruction_display,instruction_message,phase1a
+22.139655,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+33.498615,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase1c
+33.500385,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1c
+33.5022,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase1c
+33.50418,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+33.505683,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+44.88215,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase2a
+44.88392,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase2a
+44.885197,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase2a
+127.45157,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3a
+128.229822,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+128.454275,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+128.612348,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+128.75705,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+128.911577,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+129.052999,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase3b
+130.259608,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase4a
+0.02449,instruction_display,welcome_message,start_experiment
+3.590086,key_press,right,start_experiment
+3.603707,instruction_display,instruction_message,phase0
+3.917339,key_press,right,phase0
+3.918511,information_display,counter_starts,phase0a
+7.461355,key_press,d,phase0a
+7.671317,key_press,d,phase0a
+7.846984,key_press,d,phase0a
+8.054146,key_press,d,phase0a
+8.263931,key_press,d,phase0a
+8.480172,key_press,d,phase0a
+8.493681,instruction_display,instruction_message,phase1a
+8.693188,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+20.029945,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+20.031992,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+20.033679,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+20.03551,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+0.035097,instruction_display,welcome_message,start_experiment
+5.59055,key_press,right,start_experiment
+5.627723,instruction_display,instruction_message,phase0
+6.645797,key_press,right,phase0
+6.647069,information_display,counter_starts,phase0a
+0.024662,instruction_display,welcome_message,start_experiment
+4.195192,key_press,right,start_experiment
+4.20922,instruction_display,instruction_message,phase0
+5.258918,key_press,right,phase0
+5.261014,information_display,counter_starts,phase0a
+9.525715,key_press,d,phase0a
+9.718292,key_press,d,phase0a
+9.893607,key_press,d,phase0a
+10.053129,key_press,d,phase0a
+10.230339,key_press,d,phase0a
+10.395967,key_press,d,phase0a
+10.410065,instruction_display,instruction_message,phase1a
+10.938331,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+0.023688,instruction_display,welcome_message,start_experiment
+0.034824,instruction_display,welcome_message,start_experiment
+4.844839,key_press,right,start_experiment
+4.858169,instruction_display,instruction_message,phase0
+0.024516,instruction_display,welcome_message,start_experiment
+4.61609,key_press,right,start_experiment
+4.629429,instruction_display,instruction_message,phase0
+4.984233,key_press,right,phase0
+4.985357,information_display,counter_starts,phase0a
+6.506791,key_press,d,phase0a
+6.704582,key_press,d,phase0a
+6.868024,key_press,d,phase0a
+7.024271,key_press,d,phase0a
+7.232367,key_press,d,phase0a
+7.972323,key_press,d,phase0a
+7.987271,instruction_display,instruction_message,phase1a
+15.751899,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+27.094434,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1c
+27.096774,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1c
+38.453428,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase2a
+38.455845,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase2a
+38.458493,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase2a
+38.461113,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase2a
+38.463467,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase2a
+38.465874,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase2a
+38.468043,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase2a
+38.469737,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase2a
+38.471642,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase2a
+38.473601,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase2a
+38.475243,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase2a
+38.476775,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase2a
+38.478551,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase2a
+49.862552,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+0.024418,instruction_display,welcome_message,start_experiment
+5.458323,key_press,right,start_experiment
+5.490694,instruction_display,instruction_message,phase0
+7.425815,key_press,right,phase0
+7.428079,information_display,counter_starts,phase0a
+11.150388,key_press,d,phase0a
+11.333686,key_press,d,phase0a
+11.498917,key_press,d,phase0a
+11.643538,key_press,d,phase0a
+11.786366,key_press,d,phase0a
+11.924504,key_press,d,phase0a
+11.939259,instruction_display,instruction_message,phase1a
+17.785973,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1a
+29.154455,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1c
+29.156273,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+29.158253,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+29.160397,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+414.432672,"<Event(768-KeyDown {'unicode': ' ', 'key': 32, 'mod': 4096, 'scancode': 44, 'window': None})>",[],phase2a
+0.028417,instruction_display,welcome_message,start_experiment
+5.546046,key_press,right,start_experiment
+5.569576,instruction_display,instruction_message,phase0
+16.913302,key_press,right,phase0
+16.914554,information_display,counter_starts,phase0a
+20.414769,key_press,d,phase0a
+20.923564,key_press,d,phase0a
+21.253182,key_press,d,phase0a
+21.56496,key_press,d,phase0a
+22.044508,key_press,d,phase0a
+23.499211,key_press,d,phase0a
+23.513367,instruction_display,instruction_message,phase1a
+37.648948,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+49.02985,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+49.031763,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+49.034247,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
+49.036328,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+106.208688,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase2a
+109.538861,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+109.540225,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+109.541659,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3a
+110.467568,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+110.857025,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+111.067349,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+111.25964,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+111.451612,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+111.63521,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase3b
+111.824771,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase4a
+0.024731,instruction_display,welcome_message,start_experiment
+9.832354,key_press,right,start_experiment
+9.864311,instruction_display,instruction_message,phase0
+19.160324,key_press,right,phase0
+19.162641,information_display,counter_starts,phase0a
+0.023094,instruction_display,welcome_message,start_experiment
+12.670586,key_press,right,start_experiment
+12.685221,instruction_display,instruction_message,phase0
+16.510071,key_press,right,phase0
+16.51135,information_display,counter_starts,phase0a
+0.038274,instruction_display,welcome_message,start_experiment
+2.11853,key_press,right,start_experiment
+2.132887,instruction_display,instruction_message,phase0
+2.533963,key_press,right,phase0
+2.535137,information_display,counter_starts,phase0a
+9.158033,key_press,d,phase0a
+9.486932,key_press,d,phase0a
+9.703037,key_press,d,phase0a
+9.881239,key_press,d,phase0a
+10.159597,key_press,d,phase0a
+10.631483,key_press,d,phase0a
+10.646191,instruction_display,instruction_message,phase1a
+14.541949,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1a
+0.039652,instruction_display,welcome_message,start_experiment
+1.662897,key_press,right,start_experiment
+1.677085,instruction_display,instruction_message,phase0
+2.598457,key_press,right,phase0
+2.600457,information_display,counter_starts,phase0a
+0.049232,instruction_display,welcome_message,start_experiment
+4.329943,key_press,right,start_experiment
+4.353197,instruction_display,instruction_message,phase0
+9.233132,key_press,right,phase0
+9.234423,information_display,counter_starts,phase0a
+15.296875,key_press,d,phase0a
+15.699485,key_press,d,phase0a
+16.045282,key_press,d,phase0a
+16.474149,key_press,d,phase0a
+17.164164,key_press,d,phase0a
+17.997064,key_press,d,phase0a
+18.020315,instruction_display,instruction_message,phase1a
+65.913082,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase1a
+0.040506,instruction_display,welcome_message,start_experiment
+4.560887,key_press,right,start_experiment
+4.592624,instruction_display,instruction_message,phase0
+6.088243,key_press,right,phase0
+6.090716,information_display,counter_starts,phase0a
+9.327986,key_press,d,phase0a
+9.71438,key_press,d,phase0a
+10.06703,key_press,d,phase0a
+10.428264,key_press,d,phase0a
+10.844429,key_press,d,phase0a
+11.888554,key_press,d,phase0a
+11.902856,instruction_display,instruction_message,phase1a
+0.048217,instruction_display,welcome_message,start_experiment
+9.345828,key_press,right,start_experiment
+9.377623,instruction_display,instruction_message,phase0
+13.377094,key_press,right,phase0
+13.378385,information_display,counter_starts,phase0a
+15.530817,key_press,d,phase0a
+15.907648,key_press,d,phase0a
+16.160992,key_press,d,phase0a
+16.403124,key_press,d,phase0a
+16.819944,key_press,d,phase0a
+18.077273,key_press,d,phase0a
+18.090881,instruction_display,instruction_message,phase1a
+41.745248,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1a
+4405.840732,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c

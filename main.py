@@ -62,7 +62,7 @@ window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches t
 baselineButtonPress = []
 key_press_count = 0 # Counter for button presses
 key_total_required = 5 # Total number of button presses required
-phase0_label = "Nombre de pressions de bouton restants :"
+phase0_label = "Numbre de pressions de la touche D restantes:"
 
 # Phase 1
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
@@ -71,7 +71,7 @@ duration_ms=10_000
 
 
 # Phase 2
-phase2_duration_ms = 10_000 # 1 minute = 60_000 countdown
+phase2_duration_ms = 2_000 # 1 minute = 60_000 countdown
 
 # Phase 3 
 phase3_label = "Nombre tic imités restants :"
@@ -87,6 +87,7 @@ phase_configs = [
         "title_text" : "Début d'expérience",
         "instruction": """Nous allons maintenant commencer l'expérience. \n
         Suivez attentivement les instructions qui apparaîtront à l'écran.\n 
+          \n
         Appuyez sur la touche ➡ pour continuer.""",
         "background_color": color_cream
     },
@@ -95,36 +96,45 @@ phase_configs = [
         "title_text" : "Activité motrice de base",
         "instruction": """Veuillez appuyer sur sur touche "D" avec votre index \n
         de la main dominante 5 fois, à votre rythme. \n
+          \n
         Appuyez sur la touche ➡ pour démarrer.""",
         "background_color": color_cream
     },
     {
         "id": "phase0a", # Activité motrice de base - Countdown
         "title_text" : "Activité motrice de base",
-        "instruction": """ Numbre de pressions de bouton restantes:  \n""",
+        "instruction": """ Numbre de pressions de la touche "D" restantes:  \n""",
         "background_color": color_turquoise
     },
     {
         "id": "phase1a", # EEG au repos, yeux fermées - Instruction
+        "title_text" : "Période de repos - Yeux fermés",
         "instruction": """Veuillez vous détendre.\n
-        Vous allez passer 1 minute avec les yeux fermés, un ton vous indiquera le debut et la fin. \n
-        N'essayez pas de provoquer ou de supprimer vos tics intentionnellement. \n
+        Vous allez passer 1 minute les yeux fermés. \n
+        Un signal sonore marquera le début et la fin de cette période.\n
+        Important :\n
+        N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+          \n
         Appuyez sur la touche ➡ pour démarrer.
         """,
         "background_color": color_cream
     },
     {
         "id": "phase1b", # EEG au repos, yeux fermées
+        "title_text" : "Période de repos — Yeux fermés",
         "instruction": """ Fermez vous yeux, temps restant: \n""",
         "background_color": color_olive
     },
     {
         "id": "phase1c", # EEG au repos, yeux ouverts - Instruction
+        "title_text" : "Période de repos — Fixez la croix",
         "instruction": """Veuillez vous détendre.\n
         Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
-        l'écran changera automatiquement à la fin\n
-        N'essayez pas de provoquer ou de supprimer vos tics intentionnellement. \n,
-         Appuyez sur la touche > pour démarrer.""",
+        L'écran changera automatiquement à la fin\n
+        Important :\n
+        N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+        Appuyez sur la touche ➡ pour démarrer.
+        """,
         "background_color": color_cream
     },
     {
@@ -200,7 +210,7 @@ def display_instruction(window, phase_config):
         return True # Continue to display text even if images fail
 
     # Resize image2
-    new_width = window.get_width() // 10  # Control image size here
+    new_width = window.get_width() // 20  # Control image size here
     aspect_ratio = image2.get_height() / image2.get_width()
     image2 = pg.transform.scale(image2, (new_width, int(new_width * aspect_ratio)))
     
@@ -235,12 +245,34 @@ def display_instruction(window, phase_config):
     current_y = image2_rect.bottom + spacing_after_image2
 
     # Display text below image 2
-    font = pg.font.SysFont("Segoe UI Symbol", 32)
+    """font = pg.font.SysFont("Segoe UI Symbol", 32)
     instruction_text = phase_config.get("instruction", "")
     messages = instruction_text.split('\n')
     for i, message in enumerate(messages):
         text_surface = font.render(message.strip(), True, color_violet)
         text_rect = text_surface.get_rect(center=(center_x, current_y + i * line_spacing)) 
+        window.blit(text_surface, text_rect)"""
+        
+    # Display instruction text
+    font = pg.font.SysFont("Segoe UI Symbol", 32)
+    instruction_text = phase_config.get("instruction", "")
+    messages = instruction_text.split('\n')
+
+    # Margins
+    left_margin = 100
+    right_margin = window.get_width() - 100
+    max_line_width = right_margin - left_margin
+
+    # Display instruction text LEFT aligned
+    font = pg.font.SysFont("Segoe UI Symbol", 32)
+    instruction_text = phase_config.get("instruction", "")
+    messages = instruction_text.split('\n')
+
+    left_margin = 600  # <-- left margin (adjustable)
+
+    for i, message in enumerate(messages):
+        text_surface = font.render(message.strip(), True, color_violet)
+        text_rect = text_surface.get_rect(topleft=(left_margin, current_y + i * line_spacing)) 
         window.blit(text_surface, text_rect)
 
     pg.display.flip()
@@ -249,9 +281,9 @@ def display_instruction(window, phase_config):
 def display_pushbutton_countdown(window, phase_config, current_count, total_required, label):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
-    font = pg.font.SysFont("Segoe UI Symbol", 32)
+    font = pg.font.SysFont("Segoe UI Symbol", 48)
     label_surf = font.render(label, True, color_violet)
-    label_rect = label_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 60))
+    label_rect = label_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 120))
     window.blit(label_surf, label_rect)
     # Format countdown (e.g., "3/5")
     countdown_text = f"{current_count}/{total_required}"
@@ -473,7 +505,9 @@ while running and current_phase_index < len(phase_configs):
                         current_phase_index += 1 # Move to the next phase
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase1a":
-        display_instruction(window, cfg) 
+        display_instruction(window, cfg)
+        log_event('instruction_display', 'instruction_message', phase_id) 
+        
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
