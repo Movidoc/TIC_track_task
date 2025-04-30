@@ -79,6 +79,8 @@ phase3_label = "Nombre tic imités restants :"
 mimicked_tic_count = 0 # Counter for button presses
 mimicked_tic_total_required = 5 # Total number of button presses required
 
+# Phase 4  - Tics supression
+suppression_duration_ms = 10_000 # 1 minute = 60_000 countdown
 # -----------------------------------------------------------
 # --- Définition des Phases ---
 # -----------------------------------------------------------
@@ -195,20 +197,30 @@ phase_configs = [
     {
         "id": "phase4a", # Suppression des Tics - Instruction
         "instruction": 
-            """1. Asseyez-vous confortablement et détendez-vous.\n
-            2. Veuillez essayer activement de supprimer ou retenir vos tics pendant 10 min.\n
-            3. Dès que vous sentez une envie prémonitoire et que vous essayez de la supprimer, appuyez sur la barre d’espace avec votre main dominante.\n
-            Appuyez sur la touche > pour démarrer.""",
-        "background_color": color_cream
+            """Veuillez vous détendre.\n
+            Vous allez essayer activement de supprimer ou retenir vos tics pendant 10 minutes.\n
+            - Appuyez sur S pour signaler une intention de tic supprimée.\n
+            - Appuyez sur T pour signaler un tic spontané que vous n’avez pas réussi à supprimer.\n
+            \n
+            Appuyez sur la touche ➡ pour commencer.""",
+        "background_color": color_olive
     },
     {
-        "id": "phase4b", # Questionnaire sur la suppression des Tics
-        "instruction": "Veuillez répondre aux questions suivants avec le clavier, en utilisant le clavier et numeros de 1 a 10. \n1. Parmis les tics que vous avez réussi à supprimer, quel a été le niveau d'intensité de besoin d'exprimer ces tics que vous avez résenti?.\nPar example, 1 equivaut a un nivel minimum de besoin de les exprimer\n10 equivaut a un nivel maximum de besoin de les exprimer\nQuand vous avez répondu, validez avec la touche d'entrée",
-        "background_color": color_violet
-    },
+        "id": "phase4b", # Suppression des Tics
+        "title_text" : """ 
+        Suppresion volontaire des tics \n
+        Appuyez sur S pour marquer un tic supprimé.\n
+        Appuyez sur T pour marquer un tic spontané.
+        """,
+        "background_color": color_turquoise
+    },  
     {
         "id": "end_experiment", # Message initial
-        "instruction": "FIN de l'éxperience. \nMerci de votre participation!.\nAppuyez sur Echap (Esc) pour quitter.",
+        "instruction": """
+        FIN de l'éxperience. \n
+        Merci de votre participation!. \n
+        \n 
+        Appuyez sur Echap (Esc) pour quitter.""",
         "background_color": color_cream
     }
 ]
@@ -576,6 +588,91 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
     # Small pause at the end
     pg.time.wait(400)
 
+def display_suppression_phase(window, phase_config, phase_id, duration_ms):
+    # Fonts
+    font_title = pg.font.SysFont("Segoe UI Symbol", 20)
+    font_main = pg.font.SysFont("Segoe UI Symbol", 48)
+    font_feedback = pg.font.SysFont("Segoe UI Symbol", 26)
+
+    bg_color = phase_config.get("background_color", (0, 0, 0))
+
+    # Feedback
+    feedback_text = ""
+    feedback_color = None
+    feedback_start_time = 0
+    feedback_duration = 500  # ms
+
+    # Counters
+    suppressed_count = 0
+    spontaneous_count = 0
+
+    start_time = pg.time.get_ticks()
+    running = True
+
+    while running:
+        now = pg.time.get_ticks()
+        elapsed = now - start_time
+        remaining = max(0, duration_ms - elapsed)
+        mm_ss = f"{(remaining // 1000) // 60}:{(remaining // 1000) % 60:02d}"
+
+        # --- Event handling ---
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_s:
+                    log_event("key_press", "S (suppressed tic)", phase_id)
+                    suppressed_count += 1
+                    feedback_text = "Tic supprimé"
+                    feedback_color = color_violet
+                    feedback_start_time = now
+                elif event.key == pg.K_t:
+                    log_event("key_press", "T (spontaneous tic)", phase_id)
+                    spontaneous_count += 1
+                    feedback_text = "Tic spontané"
+                    feedback_color = color_turquoise
+                    feedback_start_time = now
+
+        # --- Drawing ---
+        window.fill(bg_color)
+
+        # Title
+        title_text = phase_config.get("title_text", "")
+        lines = title_text.strip().split('\n')
+        line_spacing = 36
+        for i, line in enumerate(lines):
+            surf = font_title.render(line.strip(), True, color_cream)
+            rect = surf.get_rect(center=(window.get_width() // 2, 50 + i * line_spacing))
+            window.blit(surf, rect)
+
+        # Countdown
+        timer_surf = font_main.render(mm_ss, True, color_cream)
+        timer_rect = timer_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 50))
+        window.blit(timer_surf, timer_rect)
+
+        # Counters
+        counter_text = f"Supprimés : {suppressed_count}   |   Spontanés : {spontaneous_count}"
+        counter_surf = font_feedback.render(counter_text, True, color_cream)
+        counter_rect = counter_surf.get_rect(center=(window.get_width() // 2, timer_rect.bottom + 40))
+        window.blit(counter_surf, counter_rect)
+
+        # Feedback (if visible)
+        if feedback_text and now - feedback_start_time < feedback_duration:
+            fb_surf = font_feedback.render(feedback_text, True, feedback_color)
+            fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, counter_rect.bottom + 40))
+            window.blit(fb_surf, fb_rect)
+
+        pg.display.flip()
+        pg.time.delay(30)
+
+        if remaining <= 0:
+            running = False
+
+    pg.time.wait(400)
+    log_event("information_display", "suppression_phase_end", phase_id)
+
+
 def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
     """
     Logs a key press event with a high-precision timestamp and the current task phase
@@ -731,17 +828,20 @@ while running and current_phase_index < len(phase_configs):
        
        
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
-    elif phase_id == "phase4a":
+    elif phase_id == "phase4a": # Suppression des Tics - Instruction
         display_instruction(window, cfg) 
-        log_event('instruction_display', 'instruction_message', phase_id)
-        
+        log_event('instruction_display', 'instruction_message', phase_id)  
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
-    # ---------------- PHASE 5: QUESTIONS  -----------------
-    
+        
+    elif phase_id == "phase4b":
+        display_suppression_phase(window, cfg, phase_id, suppression_duration_ms)
+        current_phase_index += 1 # Move to the next phase 
+         
     # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
         display_instruction(window, cfg)
+        log_event('instruction_display', 'instruction_message', phase_id)  
         waiting_for_exit = True
         while waiting_for_exit and running:
             for event in pg.event.get():
@@ -750,6 +850,7 @@ while running and current_phase_index < len(phase_configs):
                     waiting_for_exit = False
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
+                        log_event("key_press", "End of experiment", phase_id)
                         running = False
                         waiting_for_exit = False
                     # You might want to add logic for other keys if the experiment can restart

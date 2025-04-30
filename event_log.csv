@@ -6828,3 +6828,166 @@ elapsed_time_seconds,event_type,event_value,task_phase
 49.530841,key_press,D (start),phase3b
 49.857782,key_press,F (end),phase3b
 49.858785,tic_mimicked_count,5,phase3b
+0.040302,instruction_display,welcome_message,start_experiment
+7.741022,key_press,right,start_experiment
+7.75411,instruction_display,instruction_message,phase0
+9.092376,key_press,right,phase0
+9.094018,information_display,counter_starts,phase0a
+10.151479,key_press,d,phase0a
+10.479409,key_press,d,phase0a
+10.710644,key_press,d,phase0a
+10.998858,key_press,d,phase0a
+11.334263,key_press,d,phase0a
+12.20088,key_press,d,phase0a
+12.213963,instruction_display,instruction_message,phase1a
+14.97225,key_press,right,phase1a
+15.395557,information_display,tone_start,phase1b
+20.942752,information_display,tone_end,phase1b
+21.380337,instruction_display,instruction_message,phase1c
+22.964396,key_press,right,phase1c
+23.388117,information_display,tone_start,phase1d
+28.908904,information_display,tone_end,phase1d
+29.337965,instruction_display,instruction_message,phase2a
+30.868484,key_press,right,phase2a
+31.29246,information_display,tone_start,phase2b
+35.339072,key_press,D,phase2b
+36.538097,key_press,F,phase2b
+38.117066,key_press,D,phase2b
+39.212082,key_press,F,phase2b
+41.751574,information_display,tone_end,phase2b
+42.192583,instruction_display,instruction_message,phase3a
+46.948498,key_press,right,phase3a
+53.591086,key_press,D (start),phase3b
+54.825083,key_press,F (end),phase3b
+54.827113,tic_mimicked_count,1,phase3b
+59.511097,key_press,F (end),phase3b
+60.023093,key_press,F (end),phase3b
+60.462093,key_press,D (start),phase3b
+62.128322,key_press,F (end),phase3b
+62.130413,tic_mimicked_count,2,phase3b
+66.655111,key_press,D (start),phase3b
+66.984074,key_press,F (end),phase3b
+66.986222,tic_mimicked_count,3,phase3b
+68.010136,key_press,T (spontaneous),phase3b
+68.415105,key_press,T (spontaneous),phase3b
+68.838514,key_press,F (end),phase3b
+70.381101,key_press,D (start),phase3b
+70.530028,key_press,F (end),phase3b
+70.531677,tic_mimicked_count,4,phase3b
+71.326106,key_press,D (start),phase3b
+71.436126,key_press,F (end),phase3b
+71.438237,tic_mimicked_count,5,phase3b
+71.908861,instruction_display,instruction_message,phase4a
+91.21216,key_press,right,phase4a
+94.82113,key_press,S (suppressed tic),phase4b
+96.671266,information_display,suppression_phase_end,phase4b
+96.700307,instruction_display,instruction_message,end_experiment
+101.844299,key_press,End of experiment,end_experiment
+0.039064,instruction_display,welcome_message,start_experiment
+7.901819,key_press,right,start_experiment
+7.914358,instruction_display,instruction_message,phase0
+8.749228,key_press,right,phase0
+8.750193,information_display,counter_starts,phase0a
+9.871611,key_press,d,phase0a
+10.064317,key_press,d,phase0a
+10.23989,key_press,d,phase0a
+10.40521,key_press,d,phase0a
+10.789683,key_press,d,phase0a
+11.758832,key_press,d,phase0a
+11.772025,instruction_display,instruction_message,phase1a
+12.389281,key_press,right,phase1a
+12.811726,information_display,tone_start,phase1b
+18.363188,information_display,tone_end,phase1b
+18.802841,instruction_display,instruction_message,phase1c
+19.445437,key_press,right,phase1c
+19.868744,information_display,tone_start,phase1d
+25.409651,information_display,tone_end,phase1d
+25.847688,instruction_display,instruction_message,phase2a
+26.741302,key_press,right,phase2a
+27.165255,information_display,tone_start,phase2b
+27.933007,key_press,D,phase2b
+28.47699,key_press,F,phase2b
+29.089984,key_press,D,phase2b
+29.666,key_press,F,phase2b
+33.291993,key_press,D,phase2b
+33.51097,key_press,F,phase2b
+34.697179,key_press,D,phase2b
+34.842989,key_press,F,phase2b
+35.672001,key_press,F,phase2b
+36.956,key_press,F,phase2b
+37.629881,information_display,tone_end,phase2b
+38.070182,instruction_display,instruction_message,phase3a
+40.637245,key_press,right,phase3a
+41.800965,key_press,D (start),phase3b
+42.343967,key_press,D (start),phase3b
+43.098982,key_press,D (start),phase3b
+43.245975,key_press,F (end),phase3b
+43.248063,tic_mimicked_count,1,phase3b
+43.610958,key_press,D (start),phase3b
+43.755986,key_press,F (end),phase3b
+43.757867,tic_mimicked_count,2,phase3b
+44.032917,key_press,D (start),phase3b
+44.175971,key_press,F (end),phase3b
+44.177977,tic_mimicked_count,3,phase3b
+45.078988,key_press,T (spontaneous),phase3b
+45.550962,key_press,D (start),phase3b
+45.624978,key_press,F (end),phase3b
+45.627045,tic_mimicked_count,4,phase3b
+46.063139,key_press,D (start),phase3b
+46.136978,key_press,F (end),phase3b
+46.139033,tic_mimicked_count,5,phase3b
+46.60994,instruction_display,instruction_message,phase4a
+48.589257,key_press,right,phase4a
+54.050172,information_display,suppression_phase_end,phase4b
+54.081555,instruction_display,instruction_message,end_experiment
+59.021183,key_press,End of experiment,end_experiment
+0.026323,instruction_display,welcome_message,start_experiment
+7.726177,key_press,right,start_experiment
+7.756165,instruction_display,instruction_message,phase0
+8.413281,key_press,right,phase0
+8.414213,information_display,counter_starts,phase0a
+9.671708,key_press,d,phase0a
+9.857026,key_press,d,phase0a
+10.03056,key_press,d,phase0a
+10.198537,key_press,d,phase0a
+10.389726,key_press,d,phase0a
+10.793005,key_press,d,phase0a
+10.806365,instruction_display,instruction_message,phase1a
+11.445319,key_press,right,phase1a
+11.867926,information_display,tone_start,phase1b
+17.410632,information_display,tone_end,phase1b
+17.848989,instruction_display,instruction_message,phase1c
+18.781263,key_press,right,phase1c
+19.203967,information_display,tone_start,phase1d
+24.729672,information_display,tone_end,phase1d
+25.168056,instruction_display,instruction_message,phase2a
+25.949252,key_press,right,phase2a
+26.371965,information_display,tone_start,phase2b
+36.856445,information_display,tone_end,phase2b
+37.298685,instruction_display,instruction_message,phase3a
+37.925504,key_press,right,phase3a
+39.584157,key_press,D (start),phase3b
+41.780189,key_press,D (start),phase3b
+42.159187,key_press,F (end),phase3b
+42.161106,tic_mimicked_count,1,phase3b
+42.509166,key_press,D (start),phase3b
+42.615181,key_press,F (end),phase3b
+42.616902,tic_mimicked_count,2,phase3b
+42.792173,key_press,D (start),phase3b
+42.965241,key_press,F (end),phase3b
+42.967065,tic_mimicked_count,3,phase3b
+43.10718,key_press,D (start),phase3b
+43.248171,key_press,F (end),phase3b
+43.249984,tic_mimicked_count,4,phase3b
+43.425313,key_press,D (start),phase3b
+43.530177,key_press,F (end),phase3b
+43.53196,tic_mimicked_count,5,phase3b
+44.000645,instruction_display,instruction_message,phase4a
+44.909198,key_press,right,phase4a
+46.657203,key_press,S (suppressed tic),phase4b
+48.994199,key_press,T (spontaneous tic),phase4b
+52.930181,key_press,S (suppressed tic),phase4b
+54.511243,key_press,S (suppressed tic),phase4b
+55.347469,information_display,suppression_phase_end,phase4b
+55.379061,instruction_display,instruction_message,end_experiment
+57.853201,key_press,End of experiment,end_experiment
