@@ -17,13 +17,13 @@
 
 # Import necessary libraries
 import csv
-import os
 import sys
 import datetime
 import time
 import numpy as np
 # from psychopy import parallel #conda install -k -c conda-forge psychopy
 import pygame as pg
+import os
 
 # --- Initializations ---
 
@@ -52,6 +52,7 @@ color_violet = (57, 47, 90)
 
 # Initialisation Pygame
 pg.init()
+
 screen_info = pg.display.Info()
 screen_width = screen_info.current_w
 screen_height = screen_info.current_h
@@ -120,7 +121,7 @@ phase_configs = [
         "background_color": color_cream
     },
     {
-        "id": "phase1b", # EEG au repos, yeux fermées
+        "id": "phase1b", # EEG au repos, yeux fermées - Countdown
         "title_text" : "Période de repos — Yeux fermés",
         "instruction": """ Fermez vous yeux, temps restant: \n""",
         "background_color": color_olive
@@ -131,8 +132,7 @@ phase_configs = [
         "instruction": """Veuillez vous détendre.\n
         Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
         L'écran changera automatiquement à la fin\n
-        Important :\n
-        N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+        Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
         Appuyez sur la touche ➡ pour démarrer.
         """,
         "background_color": color_cream
@@ -151,7 +151,7 @@ phase_configs = [
         "background_color": color_cream
     },
     {
-        "id": "phase2b", # Tics spontanés
+        "id": "phase2b", # Tics spontanés - Countdown
         "instruction": 
         """ Laissez vos tics se manifester naturellement""",
         "background_color": color_violet
@@ -169,13 +169,13 @@ phase_configs = [
         "background_color": color_cream
     },
     {
-        "id": "phase3b", #Tics mimicking
+        "id": "phase3b", #Tics mimicking - Countdown
         "instruction": 
         """ Imitation volontaire des tics – 10 répétitions""",
         "background_color": color_violet
     },  
     {
-        "id": "phase4a", # Suppression des Tics
+        "id": "phase4a", # Suppression des Tics - Instruction
         "instruction": 
             """1. Asseyez-vous confortablement et détendez-vous.\n
             2. Veuillez essayer activement de supprimer ou retenir vos tics pendant 10 min.\n
@@ -316,9 +316,10 @@ def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
 
         pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
         
-def display_minute_countdown(window, phase_config, duration):
+def display_minute_countdown(window, phase_config, duration, phase_id):
     
-    play_tones(start_seq)                   
+    play_tones(start_seq)
+    log_event('information_display', 'tone_start', phase_id)                    
 
     start_ms   = pg.time.get_ticks()                   # 60 000 ms = 60 s
     running_cd = True
@@ -329,19 +330,33 @@ def display_minute_countdown(window, phase_config, duration):
         secs_total = remaining // 1000
         mm_ss      = f"{secs_total // 60}:{secs_total % 60:02d}"
 
-        # --- dessin ---
-        font = pg.font.SysFont("Segoe UI Symbol", 32)
+        # --- drawing ---
+        font_main = pg.font.SysFont("Segoe UI Symbol", 32)
+        font_title = pg.font.SysFont("Segoe UI Symbol", 28, bold=True)
+        
         window.fill(phase_config.get("background_color", (0, 0, 0)))
-        surf = font.render(mm_ss, True, color_cream)
-        rect = surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
-        window.blit(surf, rect)
+        
+        # Draw title at the top center
+        title_text = "Gardez les yeux fermés jusqu'au deuxième signal sonore"
+        title_surf = font_title.render(title_text, True, color_violet)
+        title_rect = title_surf.get_rect(center=(window.get_width() // 2, 50))  # 50px from top
+        window.blit(title_surf, title_rect)
+
+
+        # Draw countdown timer in the center
+        timer_surf = font_main.render(mm_ss, True, color_cream)
+        timer_rect = timer_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
+        window.blit(timer_surf, timer_rect)
+        
         pg.display.flip()
 
         if remaining == 0:
             running_cd = False
         pg.time.delay(50)                   # ~20 fps
 
-    play_tones(end_seq)                    # ---------- fin -------------
+    play_tones(end_seq)
+    log_event('information_display', 'tone_end', phase_id)
+    # ---------- fin -------------
     pg.time.wait(400)                      # laisser jouer la dernière note
 
 def display_cross_minute_countdown(window, phase_config):
@@ -466,8 +481,9 @@ while running and current_phase_index < len(phase_configs):
                 else:
                     pass  # Ignore all other keys
         current_phase_index += 1 # Move to the next phase
+        
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
-    elif phase_id == "phase0":
+    elif phase_id == "phase0": # Activité motrice de base - Instruction *OK*
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id) 
               
@@ -484,7 +500,7 @@ while running and current_phase_index < len(phase_configs):
                         pass  # Ignore all other keys
         current_phase_index += 1 # Move to the next phase   
     
-    elif phase_id == "phase0a":
+    elif phase_id == "phase0a": # Activité motrice de base - Countdown *OK*
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
         
@@ -503,23 +519,28 @@ while running and current_phase_index < len(phase_configs):
                     if key_press_count > key_total_required:
                         counting = False # Stop counting when the required number of presses is reached
                         current_phase_index += 1 # Move to the next phase
+                        
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
-    elif phase_id == "phase1a":
+    elif phase_id == "phase1a": # EEG au repos, yeux fermées - Instruction *OK*
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
         
         waiting_for_input = True
         while waiting_for_input and running:
             for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
+                if event.type == pg.QUIT:
                     running = False
                 if event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    waiting_for_input = False
+                    if event.key == pg.K_RIGHT:
+                        log_event('key_press', pg.key.name(event.key), phase_id)
+                        waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
+                    else:
+                        pass  # Ignore all other keys
         current_phase_index += 1 # Move to the next phase 
         
-    elif phase_id == "phase1b":                
-        display_minute_countdown(window, cfg, duration_ms) # 1 minute countdown
+    elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
+        display_minute_countdown(window, cfg, duration_ms, phase_id) # 1 minute countdown
+        
         current_phase_index += 1 # Move to the next phase     
         
     elif phase_id == "phase1c":

@@ -5838,3 +5838,100 @@ elapsed_time_seconds,event_type,event_value,task_phase
 18.090881,instruction_display,instruction_message,phase1a
 41.745248,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1a
 4405.840732,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+0.150117,instruction_display,welcome_message,start_experiment
+2.782495,key_press,right,start_experiment
+2.797556,instruction_display,instruction_message,phase0
+6.566361,key_press,right,phase0
+6.568315,information_display,counter_starts,phase0a
+9.688313,key_press,d,phase0a
+10.061804,key_press,d,phase0a
+10.440694,key_press,d,phase0a
+11.080476,key_press,d,phase0a
+12.358977,key_press,d,phase0a
+13.530253,key_press,d,phase0a
+13.544211,instruction_display,instruction_message,phase1a
+21.453896,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 12288, 'scancode': 79, 'window': None})>",[],phase1a
+32.776359,"<Event(768-KeyDown {'unicode': 'D', 'key': 100, 'mod': 12288, 'scancode': 7, 'window': None})>",[],phase1c
+32.778129,"<Event(768-KeyDown {'unicode': 'D', 'key': 100, 'mod': 12288, 'scancode': 7, 'window': None})>",[],phase1c
+32.780686,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 12288, 'scancode': 82, 'window': None})>",[],phase1c
+32.78241,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 12288, 'scancode': 80, 'window': None})>",[],phase1c
+32.784109,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 12288, 'scancode': 81, 'window': None})>",[],phase1c
+32.785724,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 12288, 'scancode': 79, 'window': None})>",[],phase1c
+32.787299,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 12288, 'scancode': 82, 'window': None})>",[],phase1c
+0.063654,instruction_display,welcome_message,start_experiment
+0.033799,instruction_display,welcome_message,start_experiment
+0.040287,instruction_display,welcome_message,start_experiment
+2.491963,key_press,right,start_experiment
+2.505512,instruction_display,instruction_message,phase0
+2.859521,key_press,right,phase0
+2.860508,information_display,counter_starts,phase0a
+0.039888,instruction_display,welcome_message,start_experiment
+1.776614,key_press,right,start_experiment
+1.79124,instruction_display,instruction_message,phase0
+2.119977,key_press,right,phase0
+2.121026,information_display,counter_starts,phase0a
+0.041494,instruction_display,welcome_message,start_experiment
+1.565552,key_press,right,start_experiment
+1.583686,instruction_display,instruction_message,phase0
+1.948752,key_press,right,phase0
+1.950763,information_display,counter_starts,phase0a
+0.037237,instruction_display,welcome_message,start_experiment
+1.586338,key_press,right,start_experiment
+1.600422,instruction_display,instruction_message,phase0
+2.001709,key_press,right,phase0
+2.002721,information_display,counter_starts,phase0a
+0.037465,instruction_display,welcome_message,start_experiment
+0.108537,instruction_display,welcome_message,start_experiment
+0.024314,instruction_display,welcome_message,start_experiment
+4.93037,key_press,right,start_experiment
+4.960067,instruction_display,instruction_message,phase0
+5.297862,key_press,right,phase0
+5.29948,information_display,counter_starts,phase0a
+0.036632,instruction_display,welcome_message,start_experiment
+0.037995,instruction_display,welcome_message,start_experiment
+11.0796,key_press,right,start_experiment
+11.092912,instruction_display,instruction_message,phase0
+84.078941,key_press,right,phase0
+84.079956,information_display,counter_starts,phase0a
+98.183678,key_press,d,phase0a
+98.639639,key_press,d,phase0a
+99.071966,key_press,d,phase0a
+99.578818,key_press,d,phase0a
+108.666792,key_press,d,phase0a
+110.880285,key_press,d,phase0a
+110.893692,instruction_display,instruction_message,phase1a
+162.23868,"<Event(768-KeyDown {'unicode': 's', 'key': 115, 'mod': 4096, 'scancode': 22, 'window': None})>",[],phase1a
+0.058228,instruction_display,welcome_message,start_experiment
+1.902257,key_press,right,start_experiment
+1.915128,instruction_display,instruction_message,phase0
+2.38152,key_press,right,phase0
+2.382522,information_display,counter_starts,phase0a
+3.536851,key_press,d,phase0a
+3.929372,key_press,d,phase0a
+4.239522,key_press,d,phase0a
+4.581677,key_press,d,phase0a
+4.903176,key_press,d,phase0a
+5.295297,key_press,d,phase0a
+5.310556,instruction_display,instruction_message,phase1a
+6.309874,key_press,right,phase1a
+620.628761,"<Event(768-KeyDown {'unicode': '\x1b', 'key': 27, 'mod': 4096, 'scancode': 41, 'window': None})>",[],phase1c
+0.102597,instruction_display,welcome_message,start_experiment
+2.165488,key_press,right,start_experiment
+2.196889,instruction_display,instruction_message,phase0
+2.540322,key_press,right,phase0
+2.541416,information_display,counter_starts,phase0a
+9.804831,key_press,d,phase0a
+10.174479,key_press,d,phase0a
+10.400518,key_press,d,phase0a
+10.712336,key_press,d,phase0a
+11.039456,key_press,d,phase0a
+11.582893,key_press,d,phase0a
+11.596734,instruction_display,instruction_message,phase1a
+12.468448,key_press,right,phase1a
+12.891919,information_display,tone_start,phase1b
+23.42706,information_display,tone_end,phase1b
+23.867693,"<Event(768-KeyDown {'unicode': '', 'key': 1073741906, 'mod': 4096, 'scancode': 82, 'window': None})>",[],phase1c
+23.869483,"<Event(768-KeyDown {'unicode': '', 'key': 1073741905, 'mod': 4096, 'scancode': 81, 'window': None})>",[],phase1c
+23.871683,"<Event(768-KeyDown {'unicode': '', 'key': 1073741903, 'mod': 4096, 'scancode': 79, 'window': None})>",[],phase1c
+23.8739,"<Event(768-KeyDown {'unicode': '', 'key': 1073741904, 'mod': 4096, 'scancode': 80, 'window': None})>",[],phase1c
+23.876095,"<Event(768-KeyDown {'unicode': 'd', 'key': 100, 'mod': 4096, 'scancode': 7, 'window': None})>",[],phase1c
