@@ -68,11 +68,11 @@ phase0_label = "Numbre de pressions de la touche D restantes:"
 # Phase 1 - EEG au repos
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
-duration_ms=10_000 # 1 minute = 60_000 countdown
+duration_ms=5_000 # 1 minute = 60_000 countdown
 
 
 # Phase 2 - Tics spontanés
-phase2_duration_ms = 2_000 # 1 minute = 60_000 countdown
+sponTics_duration_ms = 10_000 # 1 minute = 60_000 countdown
 
 # Phase 3  - Tics mimicking
 phase3_label = "Nombre tic imités restants :"
@@ -160,6 +160,9 @@ phase_configs = [
     },
     {
         "id": "phase2b", # Tics spontanés - Countdown
+        "title_text" : """Laissez vos tics se manifester naturellement.\n
+        Appuyez sur D pour marquer le début.\n
+        Appuyez sur F pour marquer la fin.""",
         "instruction": 
         """ Laissez vos tics se manifester naturellement""",
         "background_color": color_violet
@@ -268,8 +271,6 @@ def display_instruction(window, phase_config):
     pg.display.flip()
     return True
 
-
-
 def display_pushbutton_countdown(window, phase_config, current_count, total_required, label):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
@@ -329,8 +330,11 @@ def display_minute_countdown(window, phase_config, duration, phase_id):
         window.fill(phase_config.get("background_color", (0, 0, 0)))
         
         # Draw title at the top center
+        
         title_text = "Gardez les yeux fermés jusqu'au deuxième signal sonore"
         title_surf = font_title.render(title_text, True, color_violet)
+
+            
         title_rect = title_surf.get_rect(center=(window.get_width() // 2, 50))  # 50px from top
         window.blit(title_surf, title_rect)
 
@@ -397,7 +401,89 @@ def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
     play_tones(end_seq)
     log_event('information_display', 'tone_end', phase_id)  
     pg.time.wait(400)       # laisse jouer le dernier bip
-  
+
+def display_tic_tagging_timer(window, phase_config, duration, phase_id):
+    play_tones(start_seq)
+    log_event('information_display', 'tone_start', phase_id)
+
+    start_ms = pg.time.get_ticks()
+    running = True
+
+    font_main = pg.font.SysFont("Segoe UI Symbol", 48)
+    font_title = pg.font.SysFont("Segoe UI Symbol", 20, )
+    font_feedback = pg.font.SysFont("Segoe UI Symbol", 26)
+
+    feedback_text = ""
+    feedback_color = None
+    feedback_timer_start = 0
+    feedback_duration = 700  # ms
+
+    bg_color = phase_config.get("background_color", (0, 0, 0))
+
+    while running:
+        now_ms = pg.time.get_ticks()
+        elapsed = now_ms - start_ms
+        remaining = max(0, duration - elapsed)
+        secs_total = remaining // 1000
+        mm_ss = f"{secs_total // 60}:{secs_total % 60:02d}"
+
+        # --- Event handling ---
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+                return
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_d:
+                    log_event("key_press", "D", phase_id)
+                    feedback_text = "Début marqué"
+                    feedback_color = color_turquoise
+                    feedback_timer_start = now_ms
+                elif event.key == pg.K_f:
+                    log_event("key_press", "F", phase_id)
+                    feedback_text = "Fin marquée"
+                    feedback_color = color_olive
+                    feedback_timer_start = now_ms
+
+        # --- Drawing ---
+        window.fill(bg_color)
+
+        # Draw multi-line title from phase_config["title_text"]
+        title_text = phase_config.get("title_text", "")
+        title_lines = title_text.strip().split('\n')
+
+        line_spacing = 20
+        start_y = 50  # Distance from top
+
+        for i, line in enumerate(title_lines):
+            line = line.strip()
+            if not line:
+                continue
+            title_surf = font_title.render(line, True, color_cream)
+            title_rect = title_surf.get_rect(center=(window.get_width() // 2, start_y + i * line_spacing))
+            window.blit(title_surf, title_rect)
+
+        # Draw countdown lower on screen
+        timer_y = window.get_height() // 2 + 60
+        timer_surf = font_main.render(mm_ss, True, color_cream)
+        timer_rect = timer_surf.get_rect(center=(window.get_width() // 2, timer_y))
+        window.blit(timer_surf, timer_rect)
+
+        # Feedback message below timer
+        if feedback_text and now_ms - feedback_timer_start < feedback_duration:
+            fb_surf = font_feedback.render(feedback_text, True, feedback_color)
+            fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, timer_rect.bottom + 40))
+            window.blit(fb_surf, fb_rect)
+
+        pg.display.flip()
+
+        if remaining == 0:
+            running = False
+        pg.time.delay(30)
+
+    play_tones(end_seq)
+    log_event('information_display', 'tone_end', phase_id)
+    pg.time.wait(400)
+
 def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
     """
     Logs a key press event with a high-precision timestamp and the current task phase
@@ -524,19 +610,19 @@ while running and current_phase_index < len(phase_configs):
         display_minute_countdown(window, cfg, duration_ms, phase_id) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase     
         
-    elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction
+    elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         
-        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press 
         current_phase_index += 1
 
-    elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown               
+    elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown   *OK*            
         display_cross_minute_countdown(window, cfg, duration_ms, phase_id) #  minute countdown
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
-    elif phase_id == "phase2a":
+    elif phase_id == "phase2a": # Tics spontanés - Instruction
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         
@@ -544,8 +630,9 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1
         
     elif phase_id == "phase2b":                
-        display_minute_countdown(window, cfg, phase2_duration_ms) # 1 minute countdown
+        display_tic_tagging_timer(window, cfg, sponTics_duration_ms , phase_id)
         current_phase_index += 1 # Move to the next phase   
+        
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
     elif phase_id == "phase3a":
         display_instruction(window, cfg) 
