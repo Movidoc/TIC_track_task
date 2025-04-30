@@ -98,7 +98,7 @@ phase_configs = [
         "instruction": """Veuillez appuyer sur sur touche "D" avec votre index \n
         de la main dominante 5 fois, à votre rythme. \n
           \n
-        Appuyez sur la touche ➡ pour démarrer.""",
+        Appuyez sur la touche ➡ pour commencer.""",
         "background_color": color_cream
     },
     {
@@ -115,7 +115,7 @@ phase_configs = [
         Un signal sonore marquera le début et la fin de cette période.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
           \n
-        Appuyez sur la touche ➡ pour démarrer.
+        Appuyez sur la touche ➡ pour commencer.
         """,
         "background_color": color_cream
     },
@@ -133,7 +133,7 @@ phase_configs = [
         Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
         l'écran changera automatiquement à la fin.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
-        Appuyez sur la touche ➡ pour démarrer.
+        Appuyez sur la touche ➡ pour commencer.
         """,
         "background_color": color_cream
     },
@@ -153,7 +153,7 @@ phase_configs = [
         - Appuyez sur la touche F dès que le tic est terminé (F pour fin).\n
         Utilisez votre main dominante et l’index pour appuyer sur les touches.\n
         \n
-        Appuyez sur la touche ➡ pour démarrer.
+        Appuyez sur la touche ➡ pour commencer.
         
         """,
         "background_color": color_cream
@@ -169,21 +169,28 @@ phase_configs = [
     },    
     {
         "id": "phase3a", # Tics mimicking - Instruction
+        "title_text" : "Tics spontanés",
         "instruction": """
-        1. Asseyez-vous confortablement et détendez-vous.\n
-        2. Vous allez imiter, de façon volontaire, vos tics les plus fréquents et représentatifs.\n
-        3. Lorsque vous êtes prêt à en imiter un : appuyez une fois sur la barre d’espace avec votre main dominante, puis exécutez le tic.\n
-        4. Dès que l’imitation est terminée : appuyez à nouveau sur la barre d’espace.\n
-        5. Répétez ce cycle jusqu’à avoir enregistré 10 tics imités.\n  
-        6. Si un tic spontané survient, n’appuyez pas sur la barre d’espace\n
-        Appuyez sur la touche > pour démarrer.""",   
+        Veuillez vous détendre.\n
+        Vous allez imiter 10 fois vos tics les plus fréquents.\n
+        1. Quand vous êtes prêt : appuyez sur D (début) et exécutez le tic.\n
+        2. À la fin : appuyez sur F (fin).\n
+        3. Répétez jusqu'à 10 tics imités.\n  
+        Si un tic spontané survient, appuyez sur T pour le signaler (tic).\n
+        \n
+        Appuyez sur la touche ➡ pour commencer.
+        """,   
         "background_color": color_cream
     },
     {
         "id": "phase3b", #Tics mimicking - Countdown
-        "instruction": 
-        """ Imitation volontaire des tics – 10 répétitions""",
-        "background_color": color_violet
+        "title_text" : """ 
+        Imitation volontaire des tics, 10 répétitions \n
+        Appuyez sur D pour marquer le début.\n
+        Appuyez sur F pour marquer la fin. \n
+        Appuyez sur T pour marquer un tic spontané.
+        """,
+        "background_color": color_turquoise
     },  
     {
         "id": "phase4a", # Suppression des Tics - Instruction
@@ -416,7 +423,7 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
     feedback_text = ""
     feedback_color = None
     feedback_timer_start = 0
-    feedback_duration = 700  # ms
+    feedback_duration = 500  # ms
 
     bg_color = phase_config.get("background_color", (0, 0, 0))
 
@@ -482,6 +489,91 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
 
     play_tones(end_seq)
     log_event('information_display', 'tone_end', phase_id)
+    pg.time.wait(400)
+
+def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_total_required):
+    # Fonts
+    font_title = pg.font.SysFont("Segoe UI Symbol", 20)
+    font_counter = pg.font.SysFont("Segoe UI Symbol", 48)
+    font_feedback = pg.font.SysFont("Segoe UI Symbol", 26)
+
+    # Background color
+    bg_color = phase_config.get("background_color", (0, 0, 0))
+
+    # Feedback settings
+    feedback_text = ""
+    feedback_color = None
+    feedback_start_time = 0
+    feedback_duration = 500  # ms
+
+    # State
+    mimicked_tic_count = 0
+    awaiting_f = False  # Only count D-F pairs
+    running = True
+
+    while running:
+        now_ms = pg.time.get_ticks()
+
+        # --- Event handling ---
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return  # exit early
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_d:
+                    log_event("key_press", "D (start)", phase_id)
+                    feedback_text = "Début marqué"
+                    feedback_color = color_violet
+                    feedback_start_time = now_ms
+                    awaiting_f = True
+                elif event.key == pg.K_f:
+                    log_event("key_press", "F (end)", phase_id)
+                    feedback_text = "Fin marquée"
+                    feedback_color = color_olive
+                    feedback_start_time = now_ms
+                    if awaiting_f:
+                        mimicked_tic_count += 1
+                        awaiting_f = False
+                        log_event("tic_mimicked_count", str(mimicked_tic_count), phase_id)
+                elif event.key == pg.K_t:
+                    log_event("key_press", "T (spontaneous)", phase_id)
+                    feedback_text = "Tic spontané enregistré"
+                    feedback_color = color_cream
+                    feedback_start_time = now_ms
+
+        # --- Drawing ---
+        window.fill(bg_color)
+
+        # Draw instruction title (multi-line support)
+        title_text = phase_config.get("title_text", "")
+        lines = title_text.strip().split('\n')
+        
+        line_spacing = 20
+        for i, line in enumerate(lines):
+            surf = font_title.render(line.strip(), True, color_cream)
+            rect = surf.get_rect(center=(window.get_width() // 2, 50 + i * line_spacing))
+            window.blit(surf, rect)
+
+        # Draw counter (center)
+        counter_text = f"{mimicked_tic_count} / {mimicked_tic_total_required}"
+        counter_surf = font_counter.render(counter_text, True, color_cream)
+        counter_rect = counter_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2))
+        window.blit(counter_surf, counter_rect)
+
+        # Show feedback below counter
+        if feedback_text and now_ms - feedback_start_time < feedback_duration:
+            fb_surf = font_feedback.render(feedback_text, True, feedback_color)
+            fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, counter_rect.bottom + 40))
+            window.blit(fb_surf, fb_rect)
+
+        pg.display.flip()
+        pg.time.delay(30)
+
+        # End phase when all mimicked tics are completed
+        if mimicked_tic_count >= mimicked_tic_total_required:
+            running = False
+
+    # Small pause at the end
     pg.time.wait(400)
 
 def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
@@ -563,19 +655,15 @@ while running and current_phase_index < len(phase_configs):
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment": # *ok*
         display_instruction(window, cfg)
-        log_event('instruction_display', 'welcome_message', phase_id)      
-        
+        log_event('instruction_display', 'welcome_message', phase_id)             
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
-        
         current_phase_index += 1 # Move to the next phase
         
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id) 
-              
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
-        
         current_phase_index += 1 # Move to the next phase   
     
     elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
@@ -602,7 +690,6 @@ while running and current_phase_index < len(phase_configs):
     elif phase_id == "phase1a": # EEG au repos, yeux fermées - Instruction *OK*
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
-        
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press      
         current_phase_index += 1 # Move to the next phase 
         
@@ -613,7 +700,6 @@ while running and current_phase_index < len(phase_configs):
     elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
-        
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press 
         current_phase_index += 1
 
@@ -622,40 +708,28 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
-    elif phase_id == "phase2a": # Tics spontanés - Instruction
+    elif phase_id == "phase2a": # Tics spontanés - Instruction *OK* 
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
-        
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press     
         current_phase_index += 1
         
-    elif phase_id == "phase2b":                
+    elif phase_id == "phase2b":  # Tics spontanés              
         display_tic_tagging_timer(window, cfg, sponTics_duration_ms , phase_id)
         current_phase_index += 1 # Move to the next phase   
         
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
-    elif phase_id == "phase3a":
+    elif phase_id == "phase3a": # Tics mimicking - Instruction *OK* 
         display_instruction(window, cfg) 
-        log_event('instruction_display', 'instruction_message', phase_id)
-        
+        log_event('instruction_display', 'instruction_message', phase_id)     
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
-    elif phase_id == "phase3b":
-        counting = True # Flag to indicate if we are counting button presses
-        
-        while counting and running:
-            display_pushbutton_countdown(window, cfg, mimicked_tic_count, mimicked_tic_total_required, phase3_label) # Display the countdown
-            
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    running = False
-                elif event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    mimicked_tic_count += 1
-                    if mimicked_tic_count > mimicked_tic_total_required:
-                        counting = False # Stop counting when the required number of presses is reached
-                        current_phase_index += 1 # Move to the next phase
+    elif phase_id == "phase3b": # Tics mimicking 
+       display_mimicked_tics_phase(window, cfg, phase_id, mimicked_tic_total_required=5)
+       current_phase_index += 1 # Move to the next phase 
+       
+       
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
     elif phase_id == "phase4a":
         display_instruction(window, cfg) 

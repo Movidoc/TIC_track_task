@@ -6504,3 +6504,327 @@ elapsed_time_seconds,event_type,event_value,task_phase
 25.083592,key_press,F,phase2b
 25.80756,key_press,D,phase2b
 29.739997,information_display,tone_end,phase2b
+0.035893,instruction_display,welcome_message,start_experiment
+1.197831,key_press,right,start_experiment
+1.210542,instruction_display,instruction_message,phase0
+1.709222,key_press,right,phase0
+1.710322,information_display,counter_starts,phase0a
+2.937229,key_press,d,phase0a
+3.144937,key_press,d,phase0a
+3.329219,key_press,d,phase0a
+3.527037,key_press,d,phase0a
+3.847008,key_press,d,phase0a
+5.183607,key_press,d,phase0a
+5.21536,instruction_display,instruction_message,phase1a
+7.309533,key_press,right,phase1a
+7.733672,information_display,tone_start,phase1b
+13.239694,information_display,tone_end,phase1b
+13.677459,instruction_display,instruction_message,phase1c
+14.381309,key_press,right,phase1c
+14.804385,information_display,tone_start,phase1d
+20.333354,information_display,tone_end,phase1d
+20.7725,instruction_display,instruction_message,phase2a
+21.477215,key_press,right,phase2a
+21.900126,information_display,tone_start,phase2b
+22.667183,key_press,D,phase2b
+25.785184,key_press,F,phase2b
+29.775184,key_press,D,phase2b
+32.385861,information_display,tone_end,phase2b
+32.825779,instruction_display,instruction_message,phase3a
+53.173474,key_press,right,phase3a
+0.035318,instruction_display,welcome_message,start_experiment
+68.30868,key_press,right,start_experiment
+68.322271,instruction_display,instruction_message,phase0
+70.620043,key_press,right,phase0
+70.621109,information_display,counter_starts,phase0a
+71.597022,key_press,d,phase0a
+71.780717,key_press,d,phase0a
+71.940453,key_press,d,phase0a
+72.103352,key_press,d,phase0a
+72.247152,key_press,d,phase0a
+72.621184,key_press,d,phase0a
+72.634891,instruction_display,instruction_message,phase1a
+73.228001,key_press,right,phase1a
+73.650766,information_display,tone_start,phase1b
+79.167656,information_display,tone_end,phase1b
+79.606215,instruction_display,instruction_message,phase1c
+80.692011,key_press,right,phase1c
+81.114893,information_display,tone_start,phase1d
+86.612195,information_display,tone_end,phase1d
+87.049868,instruction_display,instruction_message,phase2a
+87.836047,key_press,right,phase2a
+88.259742,information_display,tone_start,phase2b
+88.852877,key_press,D,phase2b
+89.908093,key_press,F,phase2b
+90.516828,key_press,F,phase2b
+91.022843,key_press,F,phase2b
+91.445673,key_press,D,phase2b
+92.340701,key_press,F,phase2b
+93.542875,key_press,D,phase2b
+94.840657,key_press,F,phase2b
+98.737976,information_display,tone_end,phase2b
+99.178103,instruction_display,instruction_message,phase3a
+100.283993,key_press,right,phase3a
+101.79663,key_press,D (start),phase3b
+103.191842,key_press,F (end),phase3b
+103.194002,tic_mimicked_count,1,phase3b
+105.774854,key_press,F (end),phase3b
+106.316831,key_press,F (end),phase3b
+107.610676,key_press,F (end),phase3b
+110.498641,key_press,D (start),phase3b
+112.070808,key_press,F (end),phase3b
+112.07281,tic_mimicked_count,2,phase3b
+116.238847,key_press,D (start),phase3b
+117.292861,key_press,F (end),phase3b
+117.294962,tic_mimicked_count,3,phase3b
+117.873849,key_press,F (end),phase3b
+118.919848,key_press,T (spontaneous),phase3b
+122.06783,key_press,T (spontaneous),phase3b
+123.709824,key_press,D (start),phase3b
+123.891849,key_press,F (end),phase3b
+123.893942,tic_mimicked_count,4,phase3b
+124.293813,key_press,D (start),phase3b
+124.44088,key_press,F (end),phase3b
+124.443359,tic_mimicked_count,5,phase3b
+0.036742,instruction_display,welcome_message,start_experiment
+0.874815,key_press,right,start_experiment
+0.888277,instruction_display,instruction_message,phase0
+1.313899,key_press,right,phase0
+1.314947,information_display,counter_starts,phase0a
+2.821319,key_press,d,phase0a
+3.011887,key_press,d,phase0a
+3.174225,key_press,d,phase0a
+3.325305,key_press,d,phase0a
+3.475045,key_press,d,phase0a
+3.827589,key_press,d,phase0a
+3.840533,instruction_display,instruction_message,phase1a
+4.86615,key_press,right,phase1a
+5.290533,information_display,tone_start,phase1b
+10.829231,information_display,tone_end,phase1b
+11.26699,instruction_display,instruction_message,phase1c
+11.930175,key_press,right,phase1c
+12.354121,information_display,tone_start,phase1d
+17.892176,information_display,tone_end,phase1d
+18.330351,instruction_display,instruction_message,phase2a
+19.138048,key_press,right,phase2a
+19.562279,information_display,tone_start,phase2b
+30.053234,information_display,tone_end,phase2b
+30.494445,instruction_display,instruction_message,phase3a
+31.249995,key_press,right,phase3a
+32.129807,key_press,D (start),phase3b
+33.469256,key_press,F (end),phase3b
+33.471151,tic_mimicked_count,1,phase3b
+34.868795,key_press,D (start),phase3b
+35.688799,key_press,F (end),phase3b
+35.690766,tic_mimicked_count,2,phase3b
+36.715796,key_press,T (spontaneous),phase3b
+38.012803,key_press,T (spontaneous),phase3b
+38.32477,key_press,D (start),phase3b
+38.667784,key_press,F (end),phase3b
+38.669686,tic_mimicked_count,3,phase3b
+39.048771,key_press,D (start),phase3b
+39.290753,key_press,F (end),phase3b
+39.292598,tic_mimicked_count,4,phase3b
+39.736772,key_press,D (start),phase3b
+39.943132,key_press,F (end),phase3b
+39.945014,tic_mimicked_count,5,phase3b
+0.037033,instruction_display,welcome_message,start_experiment
+2.03199,key_press,right,start_experiment
+2.062229,instruction_display,instruction_message,phase0
+2.58331,key_press,right,phase0
+2.584336,information_display,counter_starts,phase0a
+3.859638,key_press,d,phase0a
+4.096312,key_press,d,phase0a
+4.299812,key_press,d,phase0a
+4.480316,key_press,d,phase0a
+4.688301,key_press,d,phase0a
+5.167735,key_press,d,phase0a
+5.198586,instruction_display,instruction_message,phase1a
+5.871495,key_press,right,phase1a
+6.29655,information_display,tone_start,phase1b
+11.846905,information_display,tone_end,phase1b
+12.284553,instruction_display,instruction_message,phase1c
+13.023298,key_press,right,phase1c
+13.447222,information_display,tone_start,phase1d
+18.97505,information_display,tone_end,phase1d
+19.412473,instruction_display,instruction_message,phase2a
+20.047533,key_press,right,phase2a
+20.472013,information_display,tone_start,phase2b
+26.455454,key_press,D,phase2b
+27.144447,key_press,F,phase2b
+28.069472,key_press,D,phase2b
+28.276444,key_press,F,phase2b
+30.027446,key_press,D,phase2b
+30.198441,key_press,F,phase2b
+30.929558,information_display,tone_end,phase2b
+31.369929,instruction_display,instruction_message,phase3a
+32.647237,key_press,right,phase3a
+37.786444,key_press,D (start),phase3b
+39.154436,key_press,F (end),phase3b
+39.156324,tic_mimicked_count,1,phase3b
+40.087442,key_press,D (start),phase3b
+40.632449,key_press,F (end),phase3b
+40.634339,tic_mimicked_count,2,phase3b
+41.560454,key_press,T (spontaneous),phase3b
+43.813435,key_press,D (start),phase3b
+45.493472,key_press,F (end),phase3b
+45.495242,tic_mimicked_count,3,phase3b
+46.355437,key_press,F (end),phase3b
+46.72942,key_press,F (end),phase3b
+48.676443,key_press,T (spontaneous),phase3b
+49.532522,key_press,T (spontaneous),phase3b
+50.005477,key_press,T (spontaneous),phase3b
+51.269649,key_press,D (start),phase3b
+51.416505,key_press,F (end),phase3b
+51.418612,tic_mimicked_count,4,phase3b
+51.711483,key_press,D (start),phase3b
+51.786493,key_press,F (end),phase3b
+51.78858,tic_mimicked_count,5,phase3b
+0.043719,instruction_display,welcome_message,start_experiment
+0.637551,key_press,right,start_experiment
+0.650712,instruction_display,instruction_message,phase0
+1.948857,key_press,right,phase0
+1.949985,information_display,counter_starts,phase0a
+3.025547,key_press,d,phase0a
+3.222616,key_press,d,phase0a
+3.401086,key_press,d,phase0a
+3.584377,key_press,d,phase0a
+3.862618,key_press,d,phase0a
+4.997059,key_press,d,phase0a
+5.028814,instruction_display,instruction_message,phase1a
+5.709043,key_press,right,phase1a
+6.133682,information_display,tone_start,phase1b
+11.660349,information_display,tone_end,phase1b
+12.098636,instruction_display,instruction_message,phase1c
+12.549139,key_press,right,phase1c
+12.973599,information_display,tone_start,phase1d
+18.506787,information_display,tone_end,phase1d
+18.945796,instruction_display,instruction_message,phase2a
+19.900944,key_press,right,phase2a
+20.323653,information_display,tone_start,phase2b
+20.992154,key_press,D,phase2b
+21.409144,key_press,F,phase2b
+22.058171,key_press,D,phase2b
+22.299139,key_press,F,phase2b
+22.781137,key_press,D,phase2b
+23.230141,key_press,F,phase2b
+24.813147,key_press,D,phase2b
+25.232133,key_press,D,phase2b
+25.711134,key_press,F,phase2b
+30.800666,information_display,tone_end,phase2b
+31.23367,instruction_display,instruction_message,phase3a
+32.677074,key_press,right,phase3a
+38.948136,key_press,D (start),phase3b
+39.746138,key_press,F (end),phase3b
+39.748001,tic_mimicked_count,1,phase3b
+40.652147,key_press,D (start),phase3b
+41.422143,key_press,F (end),phase3b
+41.424098,tic_mimicked_count,2,phase3b
+42.193143,key_press,F (end),phase3b
+42.746125,key_press,F (end),phase3b
+43.274159,key_press,D (start),phase3b
+44.071155,key_press,D (start),phase3b
+44.838154,key_press,D (start),phase3b
+45.253125,key_press,F (end),phase3b
+45.255089,tic_mimicked_count,3,phase3b
+46.547149,key_press,D (start),phase3b
+47.42812,key_press,D (start),phase3b
+47.813182,key_press,F (end),phase3b
+47.815026,tic_mimicked_count,4,phase3b
+48.975204,key_press,T (spontaneous),phase3b
+49.348177,key_press,T (spontaneous),phase3b
+50.297136,key_press,T (spontaneous),phase3b
+50.758176,key_press,T (spontaneous),phase3b
+51.648176,key_press,D (start),phase3b
+51.798186,key_press,F (end),phase3b
+51.800307,tic_mimicked_count,5,phase3b
+0.036759,instruction_display,welcome_message,start_experiment
+2.030068,key_press,right,start_experiment
+2.042544,instruction_display,instruction_message,phase0
+2.997567,key_press,right,phase0
+2.998687,information_display,counter_starts,phase0a
+4.158835,key_press,d,phase0a
+4.352344,key_press,d,phase0a
+4.53578,key_press,d,phase0a
+4.711699,key_press,d,phase0a
+5.135314,key_press,d,phase0a
+5.646649,key_press,d,phase0a
+5.659446,instruction_display,instruction_message,phase1a
+6.245631,key_press,right,phase1a
+6.669691,information_display,tone_start,phase1b
+12.210902,information_display,tone_end,phase1b
+12.647843,instruction_display,instruction_message,phase1c
+13.277747,key_press,right,phase1c
+13.701665,information_display,tone_start,phase1d
+19.207008,information_display,tone_end,phase1d
+19.647575,instruction_display,instruction_message,phase2a
+20.421662,key_press,right,phase2a
+20.845816,information_display,tone_start,phase2b
+22.541333,key_press,D,phase2b
+25.934316,key_press,F,phase2b
+30.153349,key_press,D,phase2b
+31.335623,information_display,tone_end,phase2b
+31.775828,instruction_display,instruction_message,phase3a
+32.885405,key_press,right,phase3a
+0.036309,instruction_display,welcome_message,start_experiment
+1.38124,key_press,right,start_experiment
+1.393764,instruction_display,instruction_message,phase0
+1.764547,key_press,right,phase0
+1.765578,information_display,counter_starts,phase0a
+3.110968,key_press,d,phase0a
+3.310499,key_press,d,phase0a
+3.468855,key_press,d,phase0a
+3.636744,key_press,d,phase0a
+3.977126,key_press,d,phase0a
+4.941163,key_press,d,phase0a
+4.954831,instruction_display,instruction_message,phase1a
+5.588645,key_press,right,phase1a
+6.011167,information_display,tone_start,phase1b
+11.541983,information_display,tone_end,phase1b
+11.964605,instruction_display,instruction_message,phase1c
+0.038653,instruction_display,welcome_message,start_experiment
+1.374461,key_press,right,start_experiment
+1.404481,instruction_display,instruction_message,phase0
+2.365306,key_press,right,phase0
+2.366379,information_display,counter_starts,phase0a
+3.023445,key_press,d,phase0a
+3.272235,key_press,d,phase0a
+3.513285,key_press,d,phase0a
+3.720419,key_press,d,phase0a
+3.917718,key_press,d,phase0a
+4.569435,key_press,d,phase0a
+4.582828,instruction_display,instruction_message,phase1a
+5.18946,key_press,right,phase1a
+5.61392,information_display,tone_start,phase1b
+11.12033,information_display,tone_end,phase1b
+11.559745,instruction_display,instruction_message,phase1c
+14.949362,key_press,right,phase1c
+15.372128,information_display,tone_start,phase1d
+20.912534,information_display,tone_end,phase1d
+21.349132,instruction_display,instruction_message,phase2a
+22.949285,key_press,right,phase2a
+23.372634,information_display,tone_start,phase2b
+24.730874,key_press,D,phase2b
+25.845993,key_press,F,phase2b
+29.471977,key_press,D,phase2b
+33.856212,information_display,tone_end,phase2b
+34.290489,instruction_display,instruction_message,phase3a
+35.26124,key_press,right,phase3a
+36.400814,key_press,D (start),phase3b
+37.575816,key_press,F (end),phase3b
+37.576847,tic_mimicked_count,1,phase3b
+40.603788,key_press,T (spontaneous),phase3b
+42.459147,key_press,D (start),phase3b
+43.346209,key_press,F (end),phase3b
+43.347561,tic_mimicked_count,2,phase3b
+43.942877,key_press,D (start),phase3b
+44.472836,key_press,D (start),phase3b
+45.610882,key_press,D (start),phase3b
+45.967854,key_press,F (end),phase3b
+45.969204,tic_mimicked_count,3,phase3b
+47.687799,key_press,D (start),phase3b
+48.043804,key_press,F (end),phase3b
+48.044914,tic_mimicked_count,4,phase3b
+49.530841,key_press,D (start),phase3b
+49.857782,key_press,F (end),phase3b
+49.858785,tic_mimicked_count,5,phase3b
