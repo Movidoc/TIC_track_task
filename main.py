@@ -207,84 +207,68 @@ phase_configs = [
 # --- Fonctions d'Affichage Spécifiques aux Phases ---
 # -----------------------------------------------------------------
 def display_instruction(window, phase_config):
-    window.fill(phase_config.get("background_color", (0, 0, 0)))
+    # Fonts
+    font_title = pg.font.SysFont('Segoe UI Symbol', 36, bold=True)
+    font_text = pg.font.SysFont("Segoe UI Symbol", 32)
+
+    # Colors
+    bg_color = phase_config.get("background_color", (0, 0, 0))
+
+    # Margins & spacing
+    image_margin_top = 50
+    side_margin = 60
+    title_margin_top = 60
+    text_margin_top = 80
+    text_line_spacing = 30
+    text_left_margin = 100
+
+    window.fill(bg_color)
 
     # Load images
     try:
-        image1 = pg.image.load(image_file1).convert_alpha() # Movidoc letters
-        image2 = pg.image.load(image_file2).convert_alpha() # Movidoc logo	
+        image1 = pg.image.load(image_file1).convert_alpha()  # Movidoc center
+        image2 = pg.image.load(image_file2).convert_alpha()  # Logo right
     except pg.error as e:
         print(f"Error loading image: {e}")
-        return True # Continue to display text even if images fail
+        return True
 
-    # Resize image2
-    new_width = window.get_width() // 20  # Control image size here
+    # Resize logo (image2)
+    new_width = window.get_width() // 20
     aspect_ratio = image2.get_height() / image2.get_width()
     image2 = pg.transform.scale(image2, (new_width, int(new_width * aspect_ratio)))
-    
-    # Set spacing values (easy to adjust)
-    spacing_after_image1 = 40
-    spacing_after_title = 40
-    spacing_after_image2 = 80
-    line_spacing = 30  # space between instruction lines
-    
-    # Create title text
-    font_title = pg.font.SysFont('Segoe UI Symbol', 36, bold=True)  
-    title_text = phase_config.get("title_text", "")
-    title_surface = font_title.render(title_text, True, color_olive)  
-    
-    # Start vertical position
-    center_x = window.get_width() // 2
-    current_y = 100  # Start 100px from the top (you can control this too)
 
-    # Draw image1
-    image1_rect = image1.get_rect(center=(center_x, current_y + image1.get_height() // 2))
+    # Draw image1 (Movidoc) centered at top
+    image1_rect = image1.get_rect(midtop=(window.get_width() // 2, image_margin_top))
     window.blit(image1, image1_rect)
-    current_y = image1_rect.bottom + spacing_after_image1
 
-    # Draw title
-    title_rect = title_surface.get_rect(center=(center_x, current_y + title_surface.get_height() // 2))
-    window.blit(title_surface, title_rect)
-    current_y = title_rect.bottom + spacing_after_title
-
-    # Draw image2
-    image2_rect = image2.get_rect(center=(center_x, current_y + image2.get_height() // 2))
+    # Draw image2 (logo) top-right
+    image2_rect = image2.get_rect(topright=(window.get_width() - side_margin, image_margin_top))
     window.blit(image2, image2_rect)
-    current_y = image2_rect.bottom + spacing_after_image2
 
-    # Display text below image 2
-    """font = pg.font.SysFont("Segoe UI Symbol", 32)
+    # Draw title below the tallest image
+    top_images_bottom = max(image1_rect.bottom, image2_rect.bottom)
+    title_text = phase_config.get("title_text", "")
+    title_surf = font_title.render(title_text, True, color_olive)
+    title_rect = title_surf.get_rect(center=(window.get_width() // 2, top_images_bottom + title_margin_top))
+    window.blit(title_surf, title_rect)
+
+    # Instruction text
     instruction_text = phase_config.get("instruction", "")
     messages = instruction_text.split('\n')
-    for i, message in enumerate(messages):
-        text_surface = font.render(message.strip(), True, color_violet)
-        text_rect = text_surface.get_rect(center=(center_x, current_y + i * line_spacing)) 
-        window.blit(text_surface, text_rect)"""
-        
-    # Display instruction text
-    font = pg.font.SysFont("Segoe UI Symbol", 32)
-    instruction_text = phase_config.get("instruction", "")
-    messages = instruction_text.split('\n')
-
-    # Margins
-    left_margin = 100
-    right_margin = window.get_width() - 100
-    max_line_width = right_margin - left_margin
-
-    # Display instruction text LEFT aligned
-    font = pg.font.SysFont("Segoe UI Symbol", 32)
-    instruction_text = phase_config.get("instruction", "")
-    messages = instruction_text.split('\n')
-
-    left_margin = 600  # <-- left margin (adjustable)
+    current_y = title_rect.bottom + text_margin_top
 
     for i, message in enumerate(messages):
-        text_surface = font.render(message.strip(), True, color_violet)
-        text_rect = text_surface.get_rect(topleft=(left_margin, current_y + i * line_spacing)) 
+        message = message.strip()
+        if not message:
+            continue
+        text_surface = font_text.render(message, True, color_violet)
+        text_rect = text_surface.get_rect(topleft=(text_left_margin, current_y + i * text_line_spacing))
         window.blit(text_surface, text_rect)
 
     pg.display.flip()
-    return True # Indicate that the display happened
+    return True
+
+
 
 def display_pushbutton_countdown(window, phase_config, current_count, total_required, label):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
