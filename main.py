@@ -59,22 +59,22 @@ screen_height = screen_info.current_h
 window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches the size of the entire screen
 
 
-# Phase 0
+# Phase 0 - Activité motrice de base
 baselineButtonPress = []
 key_press_count = 0 # Counter for button presses
 key_total_required = 5 # Total number of button presses required
 phase0_label = "Numbre de pressions de la touche D restantes:"
 
-# Phase 1
+# Phase 1 - EEG au repos
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
 duration_ms=10_000
 
 
-# Phase 2
+# Phase 2 - Tics spontanés
 phase2_duration_ms = 2_000 # 1 minute = 60_000 countdown
 
-# Phase 3 
+# Phase 3  - Tics mimicking
 phase3_label = "Nombre tic imités restants :"
 mimicked_tic_count = 0 # Counter for button presses
 mimicked_tic_total_required = 5 # Total number of button presses required
@@ -451,6 +451,22 @@ def save_event_log( filename="keypress_log.csv"):
             writer.writerow(event_log[-1])
     except Exception as e:
         print(f"Error saving event log to '{filename}': {e}")
+
+def wait_for_key_press(target_key, phase_id):
+    """
+    Waits for the user to press a specific key.
+    Returns True if the key was pressed, False if the window was closed.
+    """
+    while True:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return False  # signals to stop the experiment
+            if event.type == pg.KEYDOWN:
+                if event.key == target_key:
+                    log_event('key_press', pg.key.name(event.key), phase_id)
+                    return True
+                else:
+                    pass  # ignore other keys
 # -----------------------------------------------------------------
 #  MAIN EXPERIMENTAL LOOP – sequential over phase_configs
 # -----------------------------------------------------------------
@@ -467,40 +483,22 @@ while running and current_phase_index < len(phase_configs):
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment":
         display_instruction(window, cfg)
-        log_event('instruction_display', 'welcome_message', phase_id) 
+        log_event('instruction_display', 'welcome_message', phase_id)      
         
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    running = False
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RIGHT:
-                    log_event('key_press', pg.key.name(event.key), phase_id)
-                    waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
-                else:
-                    pass  # Ignore all other keys
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
+        
         current_phase_index += 1 # Move to the next phase
         
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
-    elif phase_id == "phase0": # Activité motrice de base - Instruction *OK*
+    elif phase_id == "phase0": # Activité motrice de base - Instruction 
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id) 
               
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_RIGHT:
-                        log_event('key_press', pg.key.name(event.key), phase_id)
-                        waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
-                    else:
-                        pass  # Ignore all other keys
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
+        
         current_phase_index += 1 # Move to the next phase   
     
-    elif phase_id == "phase0a": # Activité motrice de base - Countdown *OK*
+    elif phase_id == "phase0a": # Activité motrice de base - Countdown 
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
         
@@ -525,34 +523,20 @@ while running and current_phase_index < len(phase_configs):
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
         
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_RIGHT:
-                        log_event('key_press', pg.key.name(event.key), phase_id)
-                        waiting_for_input = False  # Move to next phase ONLY when right arrow pressed
-                    else:
-                        pass  # Ignore all other keys
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
+        
         current_phase_index += 1 # Move to the next phase 
         
     elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
         display_minute_countdown(window, cfg, duration_ms, phase_id) # 1 minute countdown
-        
         current_phase_index += 1 # Move to the next phase     
         
-    elif phase_id == "phase1c":
-        display_instruction(window, cfg) 
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    waiting_for_input = False
+    elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction
+        display_instruction(window, cfg)
+        log_event('instruction_display', 'instruction_message', phase_id)
+        
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
+        
         current_phase_index += 1
 
     elif phase_id == "phase1d":                
@@ -560,30 +544,21 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase  
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
     elif phase_id == "phase2a":
-        display_instruction(window, cfg) 
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    waiting_for_input = False
+        display_instruction(window, cfg)
+        log_event('instruction_display', 'instruction_message', phase_id)
+        
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press     
         current_phase_index += 1
+        
     elif phase_id == "phase2b":                
         display_minute_countdown(window, cfg, phase2_duration_ms) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase   
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
     elif phase_id == "phase3a":
         display_instruction(window, cfg) 
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    waiting_for_input = False
+        log_event('instruction_display', 'instruction_message', phase_id)
+        
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
     elif phase_id == "phase3b":
@@ -604,14 +579,9 @@ while running and current_phase_index < len(phase_configs):
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
     elif phase_id == "phase4a":
         display_instruction(window, cfg) 
-        waiting_for_input = True
-        while waiting_for_input and running:
-            for event in pg.event.get():
-                if event.type == pg.K_ESCAPE:
-                    running = False
-                if event.type == pg.KEYDOWN:
-                    log_event(event, keypress_data, phase_id)
-                    waiting_for_input = False
+        log_event('instruction_display', 'instruction_message', phase_id)
+        
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
     # ---------------- PHASE 5: QUESTIONS  -----------------
     
