@@ -68,7 +68,7 @@ phase0_label = "Numbre de pressions de la touche D restantes:"
 # Phase 1 - EEG au repos
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
-duration_ms=10_000
+duration_ms=10_000 # 1 minute = 60_000 countdown
 
 
 # Phase 2 - Tics spontanés
@@ -113,8 +113,7 @@ phase_configs = [
         "instruction": """Veuillez vous détendre.\n
         Vous allez passer 1 minute les yeux fermés. \n
         Un signal sonore marquera le début et la fin de cette période.\n
-        Important :\n
-        N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+        Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
           \n
         Appuyez sur la touche ➡ pour démarrer.
         """,
@@ -129,9 +128,10 @@ phase_configs = [
     {
         "id": "phase1c", # EEG au repos, yeux ouverts - Instruction
         "title_text" : "Période de repos — Fixez la croix",
-        "instruction": """Veuillez vous détendre.\n
+        "instruction": """
+        Veuillez vous détendre.\n
         Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
-        L'écran changera automatiquement à la fin\n
+        l'écran changera automatiquement à la fin.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
         Appuyez sur la touche ➡ pour démarrer.
         """,
@@ -144,10 +144,18 @@ phase_configs = [
     },
     {
         "id": "phase2a", # Tics spontanés - Instruction
-        "instruction": 
-        """1. Asseyez-vous confortablement et détendez-vous.\n
-        2. Laissez vos tics se manifester naturellement : ne les retenez pas, ne les provoquez pas.\n
-        3. Dès que vous sentez une envie prémonitoire, appuyez sur la barre d’espace avec votre main dominante.""",
+        "title_text" : "Tics spontanés",
+        "instruction": """
+        Veuillez vous détendre.\n
+        Laissez vos tics se manifester naturellement pendant 10 minutes.\n
+        Ne les retenez pas et ne les provoquez pas. \n
+        - Appuyez sur la touche D dès que vous sentez une envie prémonitoire (D pour début).
+        - Appuyez sur la touche F dès que le tic est terminé (F pour fin).\n
+        Utilisez votre main dominante et l’index pour appuyer sur les touches.\n
+        \n
+        Appuyez sur la touche ➡ pour démarrer.
+        
+        """,
         "background_color": color_cream
     },
     {
@@ -359,13 +367,14 @@ def display_minute_countdown(window, phase_config, duration, phase_id):
     # ---------- fin -------------
     pg.time.wait(400)                      # laisser jouer la dernière note
 
-def display_cross_minute_countdown(window, phase_config):
+def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
     """
     • Affiche un “+” géant au centre et le décompte mm:ss en haut.
     • Les séquences start_seq / end_seq jouent au début et à la fin.
     • duration_ms peut être raccourci (10_000 ms pour test, 60_000 ms prod).
     """
     play_tones(start_seq)
+    log_event('information_display', 'tone_start', phase_id)  
     
     start_ms   = pg.time.get_ticks()
     running_cd = True
@@ -402,6 +411,7 @@ def display_cross_minute_countdown(window, phase_config):
 
     # ----- bips de fin -----
     play_tones(end_seq)
+    log_event('information_display', 'tone_end', phase_id)  
     pg.time.wait(400)       # laisse jouer le dernier bip
   
 def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
@@ -481,7 +491,7 @@ while running and current_phase_index < len(phase_configs):
     cfg = phase_configs[current_phase_index] 
     phase_id = cfg["id"]
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
-    if phase_id == "start_experiment":
+    if phase_id == "start_experiment": # *ok*
         display_instruction(window, cfg)
         log_event('instruction_display', 'welcome_message', phase_id)      
         
@@ -490,7 +500,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase
         
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
-    elif phase_id == "phase0": # Activité motrice de base - Instruction 
+    elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id) 
               
@@ -498,7 +508,7 @@ while running and current_phase_index < len(phase_configs):
         
         current_phase_index += 1 # Move to the next phase   
     
-    elif phase_id == "phase0a": # Activité motrice de base - Countdown 
+    elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
         
@@ -523,8 +533,7 @@ while running and current_phase_index < len(phase_configs):
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
         
-        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
-        
+        running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press      
         current_phase_index += 1 # Move to the next phase 
         
     elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
@@ -536,12 +545,12 @@ while running and current_phase_index < len(phase_configs):
         log_event('instruction_display', 'instruction_message', phase_id)
         
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
-        
         current_phase_index += 1
 
-    elif phase_id == "phase1d":                
-        display_cross_minute_countdown(window, cfg) #  minute countdown
-        current_phase_index += 1 # Move to the next phase  
+    elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown               
+        display_cross_minute_countdown(window, cfg, duration_ms, phase_id) #  minute countdown
+        current_phase_index += 1 # Move to the next phase 
+         
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
     elif phase_id == "phase2a":
         display_instruction(window, cfg)
