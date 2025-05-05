@@ -21,13 +21,38 @@ import sys
 import datetime
 import time
 import numpy as np
-# from psychopy import parallel #conda install -k -c conda-forge psychopy
 import pygame as pg
-import os
 
-# ------------------------------------------------------------------
-#  INITIALIZATIONS
+# -----------------------------------------------------------
+# --- INITIALIZATIONS ---
+# -----------------------------------------------------------
 
+#  PARALLEL‑PORT SET‑UP  (works even on a machine with no LPT port)
+
+try: 
+    from psychopy import parallel #conda install -k -c conda-forge psychopy
+    PORT_ADDRESS = 0xdff8 # Port address for parallel port (LPT1) /Confirm with Device Manager
+    _port = parallel.ParallelPort(PORT_ADDRESS) # initialise the port once
+    _port.setData(0) # keeps lines low at launch
+    HAVE_PARALLEL = True
+    print("[trigger] LPT initialised at 0x{:X}".format(PORT_ADDRESS))
+except Exception as e:
+    _port = None
+    HAVE_PARALLEL = False
+    print("[trigger] No parallel port available – running without hardware triggers\n", e)
+    print("          (error was:", e, ")")
+    
+#--- constants / trigger map ---
+TRIG_EXP_START   = 1        # experiment begins
+TRIG_PHASE_BASE  = 10       # will add phase index (phase0 = 10, phase1 = 11…)
+TRIG_KEY_MAP = {                # behavioural keys
+    'd': 31,
+    'f': 32,
+    's': 33,
+    't': 34,
+    'right': 40
+}
+experiment_start_time = None # (log_event sets t = 0 *and* fires EXP_START)
 
 # Path to images files
 image_file1 = "images/Movidoc.png" # Movidoc letters
@@ -45,10 +70,6 @@ log_fh = open(log_filename, 'w', newline='')               # stays open
 log_writer = csv.DictWriter(log_fh, fieldnames=LOG_FIELDNAMES)
 log_writer.writeheader()                                   # CSV header
 log_fh.flush()                                             # force header to disk                                        # make sure header hits disk
-
-# Port parallel
-# port = parallel.ParallelPort(0xdff8)
-
 
 # Color definition
 color_cream = (255, 247, 239)
@@ -233,30 +254,72 @@ phase_configs = [
 ]
 
 # -----------------------------------------------------------------
-# --- Functions  ---
+# --- Functionsc/ Helpers  ---
 # -----------------------------------------------------------------
+def send_trigger(code, pulse_ms = 5):
+    """Pulse `code` on the LPT lines; silently no‑op if no port."""
+    if not HAVE_PARALLEL:
+        print(f"[trigger] (mock) {code} (no LPT port)")
+        return
+    _port.setData(code)
+    pg.time.wait(pulse_ms)      # needs ≥2 ms for actiCHamp, 5 ms is safe
+    _port.setData(0)
+    print(f"[trigger] Sent {code}  ({pulse_ms} ms)")
+
+def trigger_phase_start(phase_idx):
+    """Send 10+phase_idx (phase0=10, phase1=11, …)"""
+    send_trigger(TRIG_PHASE_BASE + phase_idx)
 
 def log_event(event_type, event_value, current_phase_id):
+    """ ────────────────────────────────────────────────────────────────
+    Centralised logger
+      • Aligns the software clock (t = 0) with the first EXP_START
+        hardware trigger.
+      • Sends additional TTL pulses for key presses.
+      • Writes one CSV row and flushes immediately.
+      • Keeps an in‑memory copy in `event_log`.
+    ────────────────────────────────────────────────────────────────
     """
-    Writes one row to the open CSV and flushes immediately.
-    Also keeps an in‑memory copy in `event_log` for quick access.
-    """
+    
+    # --------------------------------------------------------------
+    # 1 · Establish common t = 0 and fire EXP_START once
+    # --------------------------------------------------------------
+    global experiment_start_time      # defined at module level
+    if experiment_start_time is None:  # first ever event!
+        experiment_start_time = time.perf_counter()
+        send_trigger(TRIG_EXP_START)   # 5 ms pulse on the LPT
+
+    # --------------------------------------------------------------
+    # 2 · Optionally fire a key‑specific trigger (D / F / S / T)
+    # --------------------------------------------------------------
+    if event_type == 'key_press':
+        trig = TRIG_KEY_MAP.get(event_value.lower())   # returns None if key not mapped
+        if trig is not None:
+            send_trigger(trig)
+    
+    # --------------------------------------------------------------
+    # 3 · Compute elapsed time for the CSV row
+    # --------------------------------------------------------------
     elapsed_time = time.perf_counter() - experiment_start_time
 
+    # --------------------------------------------------------------
+    # 4 · Write the row to the open CSV and flush
+    # --------------------------------------------------------------
     row = {
         'elapsed_time_seconds': round(elapsed_time, 6),
         'event_type'         : event_type,
         'event_value'        : event_value,
         'task_phase'         : current_phase_id
     }
-
     log_writer.writerow(row)
-    log_fh.flush()          # ensures data is on disk right away
-    event_log.append(row)   # optional RAM copy
+    log_fh.flush()                      # make sure it’s on disk
+    event_log.append(row)               # optional RAM copy
 
-    # Console echo (handy while debugging)
-    print(f"{row['elapsed_time_seconds']:>9.3f}s  {event_type:<18} "
-          f"{event_value}  ({current_phase_id})")
+    # --------------------------------------------------------------
+    # 5 · Console echo (useful in DEBUG mode)
+    # --------------------------------------------------------------
+    print(f"{row['elapsed_time_seconds']:>9.3f}s  "
+          f"{event_type:<18} {event_value}  ({current_phase_id})")
     
 def display_instruction(window, phase_config):
     # Fonts
@@ -558,13 +621,13 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_d:
-                    log_event("key_press", "D (start)", phase_id)
+                    log_event("key_press", "D", phase_id)
                     feedback_text = "Début marqué"
                     feedback_color = color_violet
                     feedback_start_time = now_ms
                     awaiting_f = True
                 elif event.key == pg.K_f:
-                    log_event("key_press", "F (end)", phase_id)
+                    log_event("key_press", "F", phase_id)
                     feedback_text = "Fin marquée"
                     feedback_color = color_olive
                     feedback_start_time = now_ms
@@ -573,7 +636,7 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
                         awaiting_f = False
                         log_event("tic_mimicked_count", str(mimicked_tic_count), phase_id)
                 elif event.key == pg.K_t:
-                    log_event("key_press", "T (spontaneous)", phase_id)
+                    log_event("key_press", "T", phase_id)
                     feedback_text = "Tic spontané enregistré"
                     feedback_color = color_cream
                     feedback_start_time = now_ms
@@ -647,13 +710,13 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_s:
-                    log_event("key_press", "S (suppressed tic)", phase_id)
+                    log_event("key_press", "s", phase_id)
                     suppressed_count += 1
                     feedback_text = "Tic supprimé"
                     feedback_color = color_violet
                     feedback_start_time = now
                 elif event.key == pg.K_t:
-                    log_event("key_press", "T (spontaneous tic)", phase_id)
+                    log_event("key_press", "t", phase_id)
                     spontaneous_count += 1
                     feedback_text = "Tic spontané"
                     feedback_color = color_turquoise
@@ -718,12 +781,10 @@ def wait_for_key_press(target_key, phase_id):
 current_phase_index = 0
 running = True
 
-
-experiment_start_time = time.perf_counter()  # Start time of the experiment
-
 while running and current_phase_index < len(phase_configs):
     cfg = phase_configs[current_phase_index] 
     phase_id = cfg["id"]
+      
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment": # *ok*
         display_instruction(window, cfg)
@@ -733,12 +794,14 @@ while running and current_phase_index < len(phase_configs):
         
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
+        
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id) 
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1 # Move to the next phase   
     
     elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
+        trigger_phase_start(0)           # 10
         key_press_count = 0 # Reset key press count
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
@@ -761,62 +824,72 @@ while running and current_phase_index < len(phase_configs):
                         
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase1a": # EEG au repos, yeux fermées - Instruction *OK*
+        trigger_phase_start(1)           # 11
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press      
-        current_phase_index += 1 # Move to the next phase 
+        current_phase_index += 1 # Move to the next phase
         
     elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
+        trigger_phase_start(2)           # 12
         display_minute_countdown(window, cfg, REST_EYES_CLOSED_MS, phase_id) # 1 minute countdown
-        current_phase_index += 1 # Move to the next phase     
+        current_phase_index += 1 # Move to the next phase   
         
     elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
+        trigger_phase_start(3)           # 13
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press 
         current_phase_index += 1
 
     elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown   *OK*            
+        trigger_phase_start(4)           # 14
         display_cross_minute_countdown(window, cfg, REST_EYES_OPEN_MS, phase_id) #  minute countdown
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
     elif phase_id == "phase2a": # Tics spontanés - Instruction *OK* 
+        trigger_phase_start(5)           # 15
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press     
         current_phase_index += 1
         
     elif phase_id == "phase2b":  # Tics spontanés              
+        trigger_phase_start(6)           # 16
         display_tic_tagging_timer(window, cfg, SPONT_TICS_MS , phase_id)
-        current_phase_index += 1 # Move to the next phase   
+        current_phase_index += 1 # Move to the next phase 
         
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
     elif phase_id == "phase3a": # Tics mimicking - Instruction *OK* 
+        trigger_phase_start(7)           # 17
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id)     
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
     elif phase_id == "phase3b": # Tics mimicking 
+       trigger_phase_start(8)           # 18
        display_mimicked_tics_phase(window, cfg, phase_id, MIMICKED_TOTAL_REQUIRED)
        current_phase_index += 1 # Move to the next phase 
        
-       
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
     elif phase_id == "phase4a": # Suppression des Tics - Instruction
+        trigger_phase_start(9)           # 19
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id)  
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
     elif phase_id == "phase4b":
+        trigger_phase_start(10)           # 20
         start_time = pg.time.get_ticks() # Start time for the countdown
         display_suppression_phase(window, cfg, phase_id, SUPPRESSION_MS)
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
+        trigger_phase_start(11)           # 21
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)  
        
@@ -831,14 +904,14 @@ while running and current_phase_index < len(phase_configs):
                         log_event("key_press", "End of experiment", phase_id)
                         running = False
                         waiting_for_exit = False
-                    # You might want to add logic for other keys if the experiment can restart
-
-      
+                        
     else:
         print(f"Unknown phase ID: {phase_id}")
         current_phase_index += 1 # Avoid infinite loop
 
-    
+if HAVE_PARALLEL:
+    _port.setData(0) # Close the parallel port if it was opened
+    del _port # Clean up the port object
 pg.quit()
 log_fh.close() # Close the log file
 sys.exit()
