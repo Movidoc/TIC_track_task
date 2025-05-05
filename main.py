@@ -48,12 +48,7 @@ log_fh.flush()                                             # force header to dis
 
 # Port parallel
 # port = parallel.ParallelPort(0xdff8)
- 
-premonitoryUrges = [] # Phase 2
-cuedTics = [] # Phase 3
-selfInitiatedTics = [] # Phase 3
-activeSuppression = [] # Phase 4
-urgeDuringActiveSuppression =  [] # Phase 4
+
 
 # Color definition
 color_cream = (255, 247, 239)
@@ -88,7 +83,6 @@ REST_EYES_OPEN_MS   = 60_000 if not DEBUG else 5_000
 SPONT_TICS_MS = 600_000 if not DEBUG else 10_000 # 10 minute = 600_000 countdown
 
 # Phase 3  - Tics mimicking
-phase3_label = "Nombre tic imités restants :"
 mimicked_tic_count = 0 # Counter for button presses
 MIMICKED_TOTAL_REQUIRED = 10 if not DEBUG else 5
 
@@ -145,7 +139,7 @@ phase_configs = [
         "title_text" : "Période de repos — Fixez la croix",
         "instruction": """
         Veuillez vous détendre.\n
-        Veuillez regarder et fixer la croix à l'écran pendant 1 minute, 
+        Veuillez regarder et fixer la croix à l'écran pendant quelques instants.\n, 
         l'écran changera automatiquement à la fin.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
         Appuyez sur la touche ➡ pour commencer.
