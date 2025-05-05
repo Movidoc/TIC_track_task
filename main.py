@@ -25,15 +25,26 @@ import numpy as np
 import pygame as pg
 import os
 
-# --- Initializations ---
+# ------------------------------------------------------------------
+#  INITIALIZATIONS
+
 
 # Path to images files
 image_file1 = "images/Movidoc.png" # Movidoc letters
 image_file2 = "images/Movidoc_logo.png" # Movidoc logo
 
 # Where the timestamps of events will be saved
-experiment_log = []  # Utilisez la même liste pour tous les événements
-log_filename = "experiment_log.csv" # Définissez le nom du fichier une seule fois
+# LOGGING: keep file handle open the whole experiment
+event_log = []  # List to store event logs
+
+LOG_FIELDNAMES = ['elapsed_time_seconds', 'event_type',
+                  'event_value', 'task_phase']
+
+log_filename = f"event_log_{datetime.datetime.now():%Y%m%d_%H%M%S}.csv"
+log_fh = open(log_filename, 'w', newline='')               # stays open
+log_writer = csv.DictWriter(log_fh, fieldnames=LOG_FIELDNAMES)
+log_writer.writeheader()                                   # CSV header
+log_fh.flush()                                             # force header to disk                                        # make sure header hits disk
 
 # Port parallel
 # port = parallel.ParallelPort(0xdff8)
@@ -52,35 +63,37 @@ color_violet = (57, 47, 90)
 
 # Initialisation Pygame
 pg.init()
+pg.mixer.init(frequency=44100, size=-16, channels=1) # Initialize the mixer for sound playback
 
 screen_info = pg.display.Info()
 screen_width = screen_info.current_w
 screen_height = screen_info.current_h
 window = pg.display.set_mode((0,0),pg.FULLSCREEN) # creates a win that matches the size of the entire screen
 
+DEBUG = True # ← flip to False for real runs
 
 # Phase 0 - Activité motrice de base
 baselineButtonPress = []
 key_press_count = 0 # Counter for button presses
-key_total_required = 5 # Total number of button presses required
-phase0_label = "Numbre de pressions de la touche D restantes:"
+KEY_TOTAL_REQUIRED = 10 if not DEBUG else 5 # Total number of button presses required
+phase0_label = "Nombre d'appuis de la touche D restantes:"
 
 # Phase 1 - EEG au repos
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
-duration_ms=5_000 # 1 minute = 60_000 countdown
-
+REST_EYES_CLOSED_MS = 60_000 if not DEBUG else 5_000 # 1 minute = 60_000 countdown
+REST_EYES_OPEN_MS   = 60_000 if not DEBUG else 5_000
 
 # Phase 2 - Tics spontanés
-sponTics_duration_ms = 10_000 # 1 minute = 60_000 countdown
+SPONT_TICS_MS = 600_000 if not DEBUG else 10_000 # 10 minute = 600_000 countdown
 
 # Phase 3  - Tics mimicking
 phase3_label = "Nombre tic imités restants :"
 mimicked_tic_count = 0 # Counter for button presses
-mimicked_tic_total_required = 5 # Total number of button presses required
+MIMICKED_TOTAL_REQUIRED = 10 if not DEBUG else 5
 
 # Phase 4  - Tics supression
-suppression_duration_ms = 10_000 # 1 minute = 60_000 countdown
+SUPPRESSION_MS = 600_000 if not DEBUG else 10_000 
 # -----------------------------------------------------------
 # --- Définition des Phases ---
 # -----------------------------------------------------------
@@ -98,7 +111,7 @@ phase_configs = [
         "id": "phase0", # Activité motrice de base - Instruction
         "title_text" : "Activité motrice de base",
         "instruction": """Veuillez appuyer sur sur touche "D" avec votre index \n
-        de la main dominante 5 fois, à votre rythme. \n
+        de la main dominante, à votre rythme. \n
           \n
         Appuyez sur la touche ➡ pour commencer.""",
         "background_color": color_cream
@@ -106,14 +119,14 @@ phase_configs = [
     {
         "id": "phase0a", # Activité motrice de base - Countdown
         "title_text" : "Activité motrice de base",
-        "instruction": """ Numbre de pressions de la touche "D" restantes:  \n""",
+        "instruction": """ Nombre d'appuis de la touche "D" restantes:  \n""",
         "background_color": color_turquoise
     },
     {
         "id": "phase1a", # EEG au repos, yeux fermées - Instruction
         "title_text" : "Période de repos - Yeux fermés",
         "instruction": """Veuillez vous détendre.\n
-        Vous allez passer 1 minute les yeux fermés. \n
+        Vous allez passer quelques instants les yeux fermés. \n
         Un signal sonore marquera le début et la fin de cette période.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
           \n
@@ -149,7 +162,7 @@ phase_configs = [
         "title_text" : "Tics spontanés",
         "instruction": """
         Veuillez vous détendre.\n
-        Laissez vos tics se manifester naturellement pendant 10 minutes.\n
+        Laissez vos tics se manifester naturellement pendant quelques minutes.\n
         Ne les retenez pas et ne les provoquez pas. \n
         - Appuyez sur la touche D dès que vous sentez une envie prémonitoire (D pour début).
         - Appuyez sur la touche F dès que le tic est terminé (F pour fin).\n
@@ -177,7 +190,7 @@ phase_configs = [
         Vous allez imiter 10 fois vos tics les plus fréquents.\n
         1. Quand vous êtes prêt : appuyez sur D (début) et exécutez le tic.\n
         2. À la fin : appuyez sur F (fin).\n
-        3. Répétez jusqu'à 10 tics imités.\n  
+        3. Répétez jusqu'à le nombre de tics indiqués.\n  
         Si un tic spontané survient, appuyez sur T pour le signaler (tic).\n
         \n
         Appuyez sur la touche ➡ pour commencer.
@@ -187,7 +200,7 @@ phase_configs = [
     {
         "id": "phase3b", #Tics mimicking - Countdown
         "title_text" : """ 
-        Imitation volontaire des tics, 10 répétitions \n
+        Imitation volontaire des tics, plusieurs répétitions \n
         Appuyez sur D pour marquer le début.\n
         Appuyez sur F pour marquer la fin. \n
         Appuyez sur T pour marquer un tic spontané.
@@ -198,17 +211,17 @@ phase_configs = [
         "id": "phase4a", # Suppression des Tics - Instruction
         "instruction": 
             """Veuillez vous détendre.\n
-            Vous allez essayer activement de supprimer ou retenir vos tics pendant 10 minutes.\n
+            Vous allez essayer activement de supprimer ou retenir vos tics pendant quelques minutes.\n
             - Appuyez sur S pour signaler une intention de tic supprimée.\n
             - Appuyez sur T pour signaler un tic spontané que vous n’avez pas réussi à supprimer.\n
             \n
             Appuyez sur la touche ➡ pour commencer.""",
-        "background_color": color_olive
+        "background_color": color_cream
     },
     {
         "id": "phase4b", # Suppression des Tics
         "title_text" : """ 
-        Suppresion volontaire des tics \n
+        Suppression volontaire des tics \n
         Appuyez sur S pour marquer un tic supprimé.\n
         Appuyez sur T pour marquer un tic spontané.
         """,
@@ -216,18 +229,41 @@ phase_configs = [
     },  
     {
         "id": "end_experiment", # Message initial
+        "title_text" : "Fin de l'expérience",
         "instruction": """
-        FIN de l'éxperience. \n
-        Merci de votre participation!. \n
-        \n 
-        Appuyez sur Echap (Esc) pour quitter.""",
+        Merci d'avoir participé à cette expérience.\n
+        Veuillez patienter l'arrivé de l'éxperimentateur.  \n
+        """,
         "background_color": color_cream
     }
 ]
 
 # -----------------------------------------------------------------
-# --- Fonctions d'Affichage Spécifiques aux Phases ---
+# --- Functions  ---
 # -----------------------------------------------------------------
+
+def log_event(event_type, event_value, current_phase_id):
+    """
+    Writes one row to the open CSV and flushes immediately.
+    Also keeps an in‑memory copy in `event_log` for quick access.
+    """
+    elapsed_time = time.perf_counter() - experiment_start_time
+
+    row = {
+        'elapsed_time_seconds': round(elapsed_time, 6),
+        'event_type'         : event_type,
+        'event_value'        : event_value,
+        'task_phase'         : current_phase_id
+    }
+
+    log_writer.writerow(row)
+    log_fh.flush()          # ensures data is on disk right away
+    event_log.append(row)   # optional RAM copy
+
+    # Console echo (handy while debugging)
+    print(f"{row['elapsed_time_seconds']:>9.3f}s  {event_type:<18} "
+          f"{event_value}  ({current_phase_id})")
+    
 def display_instruction(window, phase_config):
     # Fonts
     font_title = pg.font.SysFont('Segoe UI Symbol', 36, bold=True)
@@ -309,26 +345,21 @@ def display_pushbutton_countdown(window, phase_config, current_count, total_requ
 
 def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
     """
-    sequence = [(freq1, dur1_ms), (freq2, dur2_ms), ...]
-    Chaque note est générée (sinusoïde 16-bit) puis lue aussitôt.
+    sequence = [(freq_hz, dur_ms), ...]
+    Generates each sine tone once and plays it immediately.
     """
-    if not pg.mixer.get_init():
-        pg.mixer.init(frequency=sample_rate, size=-16, channels=1)
-
     for freq, dur in sequence:
-        # Génération du sinus en mémoire
         t = np.arange(int(sample_rate * dur / 1000))
-        samples = (
-            np.sin(2 * np.pi * freq * t / sample_rate) * (2**15 - 1)
-        ).astype(np.int16)
+        samples = (np.sin(2 * np.pi * freq * t / sample_rate) * (2**15 - 1)
+                  ).astype(np.int16)
 
         snd = pg.mixer.Sound(buffer=samples)
         snd.set_volume(volume)
         snd.play()
 
-        pg.time.wait(dur + gap_ms)   # laisse la note se terminer + petit blanc
+        pg.time.wait(dur + gap_ms)  # leave a short gap before next tone
         
-def display_minute_countdown(window, phase_config, duration, phase_id):
+def display_minute_countdown(window, phase_config, duration_ms, phase_id):
     
     play_tones(start_seq)
     log_event('information_display', 'tone_start', phase_id)                    
@@ -338,7 +369,7 @@ def display_minute_countdown(window, phase_config, duration, phase_id):
 
     while running_cd:
         now_ms     = pg.time.get_ticks()
-        remaining  = max(0, duration - (now_ms - start_ms))
+        remaining  = max(0, duration_ms - (now_ms - start_ms))
         secs_total = remaining // 1000
         mm_ss      = f"{secs_total // 60}:{secs_total % 60:02d}"
 
@@ -372,7 +403,7 @@ def display_minute_countdown(window, phase_config, duration, phase_id):
     play_tones(end_seq)
     log_event('information_display', 'tone_end', phase_id)
     # ---------- fin -------------
-    pg.time.wait(400)                      # laisser jouer la dernière note
+    pg.time.wait(50)                      # laisser jouer la dernière note
 
 def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
     """
@@ -419,7 +450,7 @@ def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
     # ----- bips de fin -----
     play_tones(end_seq)
     log_event('information_display', 'tone_end', phase_id)  
-    pg.time.wait(400)       # laisse jouer le dernier bip
+    pg.time.wait(50)       # laisse jouer le dernier bip
 
 def display_tic_tagging_timer(window, phase_config, duration, phase_id):
     play_tones(start_seq)
@@ -501,7 +532,7 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
 
     play_tones(end_seq)
     log_event('information_display', 'tone_end', phase_id)
-    pg.time.wait(400)
+    pg.time.wait(50)
 
 def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_total_required):
     # Fonts
@@ -586,7 +617,7 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
             running = False
 
     # Small pause at the end
-    pg.time.wait(400)
+    pg.time.wait(50)
 
 def display_suppression_phase(window, phase_config, phase_id, duration_ms):
     # Fonts
@@ -669,57 +700,8 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
         if remaining <= 0:
             running = False
 
-    pg.time.wait(400)
+    pg.time.wait(50)
     log_event("information_display", "suppression_phase_end", phase_id)
-
-
-def log_event(event_type, event_value, current_phase_id, filename="event_log.csv"):
-    """
-    Logs a key press event with a high-precision timestamp and the current task phase
-    to a list and optionally saves the data to a CSV file.
-    
-    args:
-        event_type (str): Type of event (e.g., 'keypress', 'instruction_display', etc.)
-        event_value (str): Value associated with the event (e.g., righ_arrow_key, D_key, F_press, start_experiment, etc.)
-        current_phase_id (str): ID of the current phase in the experiment
-        filename (str, optional): Name of the CSV file to save the log. Defaults to "event_log.csv".
-   
-    """
-    # Relative time since experiment started
-    elapsed_time = time.perf_counter() - experiment_start_time
-    
-    event_log.append({
-        'elapsed_time_seconds': round(elapsed_time, 6),
-        'event_type': event_type,
-        'event_value': event_value,
-        'task_phase': current_phase_id
-    })
-
-    print(f"Event '{event_type}' - '{event_value}' at {elapsed_time:.6f}s in phase '{current_phase_id}'")
-
-    save_event_log(filename)
-
-def save_event_log( filename="keypress_log.csv"):
-    """
-    Saves the key press data to a CSV file. 
-
-    """
-    if not event_log:
-        return
-
-    file_exists = os.path.isfile(filename)
-
-    try:
-        with open(filename, 'a', newline='') as csvfile:
-            fieldnames = event_log[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-            if not file_exists:
-                writer.writeheader()
-
-            writer.writerow(event_log[-1])
-    except Exception as e:
-        print(f"Error saving event log to '{filename}': {e}")
 
 def wait_for_key_press(target_key, phase_id):
     """
@@ -739,10 +721,9 @@ def wait_for_key_press(target_key, phase_id):
 # -----------------------------------------------------------------
 #  MAIN EXPERIMENTAL LOOP – sequential over phase_configs
 # -----------------------------------------------------------------
-keypress_data = []
 current_phase_index = 0
 running = True
-event_log = []  # List to store event logs
+
 
 experiment_start_time = time.perf_counter()  # Start time of the experiment
 
@@ -764,11 +745,12 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase   
     
     elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
+        key_press_count = 0 # Reset key press count
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
         
         while counting and running:
-            display_pushbutton_countdown(window, cfg, key_press_count, key_total_required, phase0_label) # Display the countdown
+            display_pushbutton_countdown(window, cfg, key_press_count, KEY_TOTAL_REQUIRED, phase0_label) # Display the countdown
             
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -779,7 +761,7 @@ while running and current_phase_index < len(phase_configs):
                         key_press_count += 1
                     else:
                         pass  # Ignore all other keys
-                    if key_press_count > key_total_required:
+                    if key_press_count >= KEY_TOTAL_REQUIRED:
                         counting = False # Stop counting when the required number of presses is reached
                         current_phase_index += 1 # Move to the next phase
                         
@@ -791,7 +773,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Move to the next phase 
         
     elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
-        display_minute_countdown(window, cfg, duration_ms, phase_id) # 1 minute countdown
+        display_minute_countdown(window, cfg, REST_EYES_CLOSED_MS, phase_id) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase     
         
     elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
@@ -801,7 +783,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1
 
     elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown   *OK*            
-        display_cross_minute_countdown(window, cfg, duration_ms, phase_id) #  minute countdown
+        display_cross_minute_countdown(window, cfg, REST_EYES_OPEN_MS, phase_id) #  minute countdown
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
@@ -812,7 +794,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1
         
     elif phase_id == "phase2b":  # Tics spontanés              
-        display_tic_tagging_timer(window, cfg, sponTics_duration_ms , phase_id)
+        display_tic_tagging_timer(window, cfg, SPONT_TICS_MS , phase_id)
         current_phase_index += 1 # Move to the next phase   
         
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
@@ -823,7 +805,7 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1
         
     elif phase_id == "phase3b": # Tics mimicking 
-       display_mimicked_tics_phase(window, cfg, phase_id, mimicked_tic_total_required=5)
+       display_mimicked_tics_phase(window, cfg, phase_id, MIMICKED_TOTAL_REQUIRED)
        current_phase_index += 1 # Move to the next phase 
        
        
@@ -835,13 +817,15 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1
         
     elif phase_id == "phase4b":
-        display_suppression_phase(window, cfg, phase_id, suppression_duration_ms)
+        start_time = pg.time.get_ticks() # Start time for the countdown
+        display_suppression_phase(window, cfg, phase_id, SUPPRESSION_MS)
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)  
+       
         waiting_for_exit = True
         while waiting_for_exit and running:
             for event in pg.event.get():
@@ -861,11 +845,6 @@ while running and current_phase_index < len(phase_configs):
         current_phase_index += 1 # Avoid infinite loop
 
     
-
 pg.quit()
-
-print("\nFinal keypress data:")
-for data in keypress_data:
-    print(data)
-    
+log_fh.close() # Close the log file
 sys.exit()
