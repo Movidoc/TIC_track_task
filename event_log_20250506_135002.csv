@@ -1,0 +1,14 @@
+elapsed_time_seconds,event_type,event_value,task_phase
+0.000456,instruction_display,welcome_message,start_experiment
+1.140791,key_press,right,start_experiment
+1.15276,instruction_display,instruction_message,phase0
+1.876231,key_press,right,phase0
+1.87719,information_display,counter_starts,phase0a
+4.301983,key_press,d,phase0a
+4.637736,key_press,d,phase0a
+4.855004,key_press,d,phase0a
+5.092072,key_press,d,phase0a
+5.471145,key_press,d,phase0a
+5.502463,instruction_display,instruction_message,phase1a
+7.580472,key_press,right,phase1a
+8.004473,information_display,tone_start,phase1b

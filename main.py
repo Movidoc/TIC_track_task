@@ -22,7 +22,7 @@ import datetime
 import time
 import numpy as np
 import pygame as pg
-
+import serial #conda install -k -c conda-forge pyserial
 # -----------------------------------------------------------
 # --- INITIALIZATIONS ---
 # -----------------------------------------------------------
@@ -42,7 +42,18 @@ except Exception as e:
     print("[trigger] No parallel port available – running without hardware triggers\n", e)
     print("          (error was:", e, ")")
     
+# SERIAL (NeoPixel) SET‑UP
+SERIAL_PORT = 'COM8'          # ← your Arduino appears on COM8
+BAUD_RATE   = 9600            # must match Serial.begin() in the sketch
+try:
+    neo_ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+    print(f"[Neopixel] Serial opened on {SERIAL_PORT} @ {BAUD_RATE} baud")
+except serial.SerialException as e:
+    neo_ser = None            # run gracefully without LEDs if unplugged
+    print("[Neopixel] Could not open serial port – LEDs disabled\n", e)
+    
 #--- constants / trigger map ---
+
 TRIG_EXP_START   = 1        # experiment begins
 TRIG_PHASE_BASE  = 10       # will add phase index (phase0 = 10, phase1 = 11…)
 TRIG_KEY_MAP = {                # behavioural keys
@@ -256,6 +267,14 @@ phase_configs = [
 # -----------------------------------------------------------------
 # --- Functionsc/ Helpers  ---
 # -----------------------------------------------------------------
+def send_led(cmd: str):
+    """Send a single text command to the Arduino, terminated by \\n."""
+    if neo_ser and neo_ser.is_open:
+        try:
+            neo_ser.write((cmd + '\n').encode('ascii'))
+        except serial.SerialException:
+            pass   # ignore runtime cable disconnects
+
 def send_trigger(code, pulse_ms = 5):
     """Pulse `code` on the LPT lines; silently no‑op if no port."""
     if not HAVE_PARALLEL:
@@ -267,9 +286,22 @@ def send_trigger(code, pulse_ms = 5):
     print(f"[trigger] Sent {code}  ({pulse_ms} ms)")
 
 def trigger_phase_start(phase_idx):
-    """Send 10+phase_idx (phase0=10, phase1=11, …)"""
+    """
+    ➊ Fire a TTL pulse on the parallel port (10 + phase_idx)
+    ➋ Tell the NeoPixel rings which phase we entered
+       • phases 0‑4  → send '0'‑'4'
+       • any later   → send '0'‑'4' again (you can expand later)
+    """
     send_trigger(TRIG_PHASE_BASE + phase_idx)
+    # ------- LED command -------
+    if   phase_idx == 0: send_led('0')
+    elif phase_idx == 1: send_led('1')
+    elif phase_idx == 2: send_led('2')
+    elif phase_idx == 3: send_led('3')
+    elif phase_idx == 4: send_led('4')
+    # phase 5+ all reuse colours 0‑4 – tweak if you want more colours
 
+        
 def log_event(event_type, event_value, current_phase_id):
     """ ────────────────────────────────────────────────────────────────
     Centralised logger
@@ -285,6 +317,7 @@ def log_event(event_type, event_value, current_phase_id):
     # 1 · Establish common t = 0 and fire EXP_START once
     # --------------------------------------------------------------
     global experiment_start_time      # defined at module level
+    
     if experiment_start_time is None:  # first ever event!
         experiment_start_time = time.perf_counter()
         send_trigger(TRIG_EXP_START)   # 5 ms pulse on the LPT
@@ -788,6 +821,7 @@ while running and current_phase_index < len(phase_configs):
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment": # *ok*
         display_instruction(window, cfg)
+        send_led('START')          # <‑‑ lights green once
         log_event('instruction_display', 'welcome_message', phase_id)             
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1 # Move to the next phase
@@ -796,7 +830,7 @@ while running and current_phase_index < len(phase_configs):
     elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
         
         display_instruction(window, cfg) 
-        log_event('instruction_display', 'instruction_message', phase_id) 
+        log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1 # Move to the next phase   
     
@@ -901,6 +935,7 @@ while running and current_phase_index < len(phase_configs):
                     waiting_for_exit = False
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
+                        send_led('STOP')           #  <‑‑ lights red
                         log_event("key_press", "End of experiment", phase_id)
                         running = False
                         waiting_for_exit = False
@@ -909,9 +944,15 @@ while running and current_phase_index < len(phase_configs):
         print(f"Unknown phase ID: {phase_id}")
         current_phase_index += 1 # Avoid infinite loop
 
+if neo_ser and neo_ser.is_open:
+    send_led('STOP')           # <‑‑ lights red for 3 s, then clears
+    neo_ser.close()
+
 if HAVE_PARALLEL:
     _port.setData(0) # Close the parallel port if it was opened
     del _port # Clean up the port object
+    
+   
 pg.quit()
 log_fh.close() # Close the log file
 sys.exit()
