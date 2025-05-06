@@ -1,0 +1,9 @@
+name: C:\Users\sirenia.mondragon\AppData\Local\miniforge3\envs\tic-track-task-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - psychopy
+  - pygame
+  - pyserial
+prefix: C:\Users\sirenia.mondragon\AppData\Local\miniforge3\envs\tic-track-task-env
