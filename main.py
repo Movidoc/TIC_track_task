@@ -20,7 +20,7 @@ import csv
 import sys
 import datetime
 import time
-import numpy as np
+import numpy as np # conda install -k -c conda-forge numpy
 import pygame as pg
 import serial #conda install -k -c conda-forge pyserial
 # -----------------------------------------------------------
@@ -43,7 +43,7 @@ except Exception as e:
     print("          (error was:", e, ")")
     
 # SERIAL (NeoPixel) SET‑UP
-SERIAL_PORT = 'COM8'          # ← your Arduino appears on COM8
+SERIAL_PORT = 'COM4'          # ← your Arduino appears on COM8
 BAUD_RATE   = 9600            # must match Serial.begin() in the sketch
 try:
     neo_ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
@@ -54,14 +54,13 @@ except serial.SerialException as e:
     
 #--- constants / trigger map ---
 
-TRIG_EXP_START   = 1        # experiment begins
-TRIG_PHASE_BASE  = 10       # will add phase index (phase0 = 10, phase1 = 11…)
+TRIG_EXP_START   = 0        # experiment begins
 TRIG_KEY_MAP = {                # behavioural keys
-    'd': 31,
-    'f': 32,
-    's': 33,
-    't': 34,
-    'right': 40
+    'd': 21,
+    'f': 22,
+    's': 23,
+    't': 24,
+    'right': 25
 }
 experiment_start_time = None # (log_event sets t = 0 *and* fires EXP_START)
 
@@ -108,18 +107,18 @@ phase0_label = "Nombre d'appuis de la touche D restantes:"
 # Phase 1 - EEG au repos
 start_seq = [(880, 180), (1046, 180)]   # début : deux bips ascendants
 end_seq   = [(440, 180), (330, 180)]    # fin  : deux bips descendants
-REST_EYES_CLOSED_MS = 60_000 if not DEBUG else 5_000 # 1 minute = 60_000 countdown
-REST_EYES_OPEN_MS   = 60_000 if not DEBUG else 5_000
+REST_EYES_CLOSED_MS = 60_000 if not DEBUG else 10_000 # 1 minute = 60_000 countdown
+REST_EYES_OPEN_MS   = 60_000 if not DEBUG else 10_000
 
 # Phase 2 - Tics spontanés
-SPONT_TICS_MS = 600_000 if not DEBUG else 10_000 # 10 minute = 600_000 countdown
+SPONT_TICS_MS = 600_000 if not DEBUG else 20_000 # 10 minute = 600_000 countdown
 
 # Phase 3  - Tics mimicking
 mimicked_tic_count = 0 # Counter for button presses
 MIMICKED_TOTAL_REQUIRED = 10 if not DEBUG else 5
 
 # Phase 4  - Tics supression
-SUPPRESSION_MS = 600_000 if not DEBUG else 10_000 
+SUPPRESSION_MS = 600_000 if not DEBUG else 20_000 
 # -----------------------------------------------------------
 # --- Définition des Phases ---
 # -----------------------------------------------------------
@@ -275,8 +274,20 @@ def send_led(cmd: str):
         except serial.SerialException:
             pass   # ignore runtime cable disconnects
 
+def send_trigger(code: int, pulse_ms: int = 5):
+    """
+    code : 1‑255 → Brain Recorder writes the same S‑number
+    """
+    if not HAVE_PARALLEL:
+        print(f"[trigger] (mock) {code} (no LPT port)")
+        return
+    _port.setData(code)        # rising edge
+    pg.time.wait(pulse_ms)
+    _port.setData(0)           # falling edge
+    pg.time.wait(2)
+    print(f"[trigger] Sent {code}")
+"""
 def send_trigger(code, pulse_ms = 5):
-    """Pulse `code` on the LPT lines; silently no‑op if no port."""
     if not HAVE_PARALLEL:
         print(f"[trigger] (mock) {code} (no LPT port)")
         return
@@ -284,23 +295,36 @@ def send_trigger(code, pulse_ms = 5):
     pg.time.wait(pulse_ms)      # needs ≥2 ms for actiCHamp, 5 ms is safe
     _port.setData(0)
     print(f"[trigger] Sent {code}  ({pulse_ms} ms)")
+    """
 
 def trigger_phase_start(phase_idx):
     """
-    ➊ Fire a TTL pulse on the parallel port (10 + phase_idx)
-    ➋ Tell the NeoPixel rings which phase we entered
-       • phases 0‑4  → send '0'‑'4'
-       • any later   → send '0'‑'4' again (you can expand later)
+    ➊ Fire a TTL pulse on the parallel port 
     """
-    send_trigger(TRIG_PHASE_BASE + phase_idx)
-    # ------- LED command -------
-    if   phase_idx == 0: send_led('0')
-    elif phase_idx == 1: send_led('1')
-    elif phase_idx == 2: send_led('2')
-    elif phase_idx == 3: send_led('3')
-    elif phase_idx == 4: send_led('4')
-    # phase 5+ all reuse colours 0‑4 – tweak if you want more colours
+    # ------- TTL trigger -------
+    if phase_idx == 0: send_trigger(1) # start_experiment
+    elif phase_idx == 1: send_trigger(2) # phase0
+    elif phase_idx == 2: send_trigger(3) # phase1a
+    elif phase_idx == 3: send_trigger(4) # phase1b
+    elif phase_idx == 4: send_trigger(5) # phase1c
+    elif phase_idx == 5: send_trigger(6) # phase1d
+    elif phase_idx == 6: send_trigger(7) # phase2a
+    elif phase_idx == 7: send_trigger(8) # phase2b
+    elif phase_idx == 8: send_trigger(9) # phase3a
+    elif phase_idx == 9: send_trigger(10) # phase3b
+    elif phase_idx == 10: send_trigger(11) # phase4a
+    elif phase_idx == 11: send_trigger(12) # phase4b
+    elif phase_idx == 12: send_trigger(13) # end_experiment
+    elif phase_idx == 13: send_trigger(14) # end_experiment
 
+    # ------- LED command -------
+    if   phase_idx == 1: send_led('0') 
+    elif phase_idx == 2: send_led('2') 
+    elif phase_idx == 4: send_led('4')
+    elif phase_idx == 6: send_led('6')
+    elif phase_idx == 8: send_led('8')
+    elif phase_idx == 10: send_led('10')
+    elif phase_idx == 12: send_led('12')
         
 def log_event(event_type, event_value, current_phase_id):
     """ ────────────────────────────────────────────────────────────────
@@ -312,7 +336,7 @@ def log_event(event_type, event_value, current_phase_id):
       • Keeps an in‑memory copy in `event_log`.
     ────────────────────────────────────────────────────────────────
     """
-    
+     
     # --------------------------------------------------------------
     # 1 · Establish common t = 0 and fire EXP_START once
     # --------------------------------------------------------------
@@ -820,22 +844,22 @@ while running and current_phase_index < len(phase_configs):
       
     # ----------------  A) START-EXPERIMENT PHASE  -----------------
     if phase_id == "start_experiment": # *ok*
+        trigger_phase_start(0) 
         display_instruction(window, cfg)
-        send_led('START')          # <‑‑ lights green once
         log_event('instruction_display', 'welcome_message', phase_id)             
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1 # Move to the next phase
         
     # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
-        
+        trigger_phase_start(1) 
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1 # Move to the next phase   
     
     elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
-        trigger_phase_start(0)           # 10
+        trigger_phase_start(2)
         key_press_count = 0 # Reset key press count
         counting = True # Flag to indicate if we are counting button presses
         log_event('information_display', 'counter_starts', phase_id) 
@@ -858,72 +882,72 @@ while running and current_phase_index < len(phase_configs):
                         
     # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
     elif phase_id == "phase1a": # EEG au repos, yeux fermées - Instruction *OK*
-        trigger_phase_start(1)           # 11
+        trigger_phase_start(3)
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id) 
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press      
         current_phase_index += 1 # Move to the next phase
         
     elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
-        trigger_phase_start(2)           # 12
+        trigger_phase_start(4)           # 12
         display_minute_countdown(window, cfg, REST_EYES_CLOSED_MS, phase_id) # 1 minute countdown
         current_phase_index += 1 # Move to the next phase   
         
     elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
-        trigger_phase_start(3)           # 13
+        trigger_phase_start(5)
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press 
         current_phase_index += 1
 
     elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown   *OK*            
-        trigger_phase_start(4)           # 14
+        trigger_phase_start(6)
         display_cross_minute_countdown(window, cfg, REST_EYES_OPEN_MS, phase_id) #  minute countdown
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
     elif phase_id == "phase2a": # Tics spontanés - Instruction *OK* 
-        trigger_phase_start(5)           # 15
+        trigger_phase_start(7)
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press     
         current_phase_index += 1
         
     elif phase_id == "phase2b":  # Tics spontanés              
-        trigger_phase_start(6)           # 16
+        trigger_phase_start(8)
         display_tic_tagging_timer(window, cfg, SPONT_TICS_MS , phase_id)
         current_phase_index += 1 # Move to the next phase 
         
     # ---------------- PHASE 3: MIMICKING TICS  -----------------
     elif phase_id == "phase3a": # Tics mimicking - Instruction *OK* 
-        trigger_phase_start(7)           # 17
+        trigger_phase_start(9)
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id)     
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
     elif phase_id == "phase3b": # Tics mimicking 
-       trigger_phase_start(8)           # 18
+       trigger_phase_start(10)
        display_mimicked_tics_phase(window, cfg, phase_id, MIMICKED_TOTAL_REQUIRED)
        current_phase_index += 1 # Move to the next phase 
        
     # ---------------- PHASE 4: TIC SUPRESSION  -----------------
     elif phase_id == "phase4a": # Suppression des Tics - Instruction
-        trigger_phase_start(9)           # 19
+        trigger_phase_start(11)
         display_instruction(window, cfg) 
         log_event('instruction_display', 'instruction_message', phase_id)  
         running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
         current_phase_index += 1
         
     elif phase_id == "phase4b":
-        trigger_phase_start(10)           # 20
+        trigger_phase_start(12) # Suppression des Tics - Countdown *ok*
         start_time = pg.time.get_ticks() # Start time for the countdown
         display_suppression_phase(window, cfg, phase_id, SUPPRESSION_MS)
         current_phase_index += 1 # Move to the next phase 
          
     # ---------------- B: END OF EXPERIMENT  -----------------                       
     elif phase_id == "end_experiment":
-        trigger_phase_start(11)           # 21
+        trigger_phase_start(13)
         display_instruction(window, cfg)
         log_event('instruction_display', 'instruction_message', phase_id)  
        
