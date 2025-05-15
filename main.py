@@ -170,7 +170,7 @@ phase_configs = [
         "title_text" : "Période de repos — Fixez la croix",
         "instruction": """
         Veuillez vous détendre.\n
-        Vous regarderez et fixerez la croix à l'écran pendant quelques instants.\n, 
+        Vous regarderez et fixerez la croix à l'écran pendant quelques instants.\n 
         L'écran changera automatiquement à la fin.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
         \n
@@ -190,8 +190,8 @@ phase_configs = [
         Veuillez vous détendre.\n
         Vous laisserez vos tics se manifester naturellement pendant quelques minutes.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
-        - Vous appuierez sur la touche D dès que vous sentirez une envie prémonitoire (D pour début).
-        - Vous appuierez sur la touche F dès que le tic sera terminé (F pour fin).\n
+        - Vous appuierez sur la touche D dès que vous sentirez une envie prémonitoire (D pour Début).
+        - Vous appuierez sur la touche F dès que le tic sera terminé (F pour Fin).\n
         Vous appuierez sur les touches avec votre index de votre main dominante.\n
         \n
         Appuyez sur la touche ➡ pour commencer.
@@ -214,10 +214,10 @@ phase_configs = [
         "instruction": """
         Veuillez vous détendre.\n
         Vous imiterez vos tics les plus fréquents.\n
-        1. Quand vous serez prêt : vous appuierez sur la tocuhe D (début) et exécuterez le tic.\n
-        2. À la fin du tic : vous appuierez sur la tocuhe F (fin).\n
+        1. Quand vous serez prêt : vous appuierez sur la touche D (Début) et exécuterez le tic.\n
+        2. À la fin du tic : vous appuierez sur la touche F (Fin).\n
         3. Vous repeterez ceci jusqu'au nombre de tics indiqués.\n  
-        Si un tic spontané survient, appuyez sur la touche T pour le signaler (tic).\n
+        Si un tic spontané survient, appuyez sur la touche T pour le signaler (Tic).\n
         \n
         Appuyez sur la touche ➡ pour commencer.
         """,   
@@ -225,11 +225,9 @@ phase_configs = [
     },
     {
         "id": "phase3b", #Tics mimicking - Countdown
-        "title_text" : "Tics imités",
-        "instruction": """
-        Imitation volontaire des tics, plusieurs répétitions \n
+        "title_text" : """Imitation volontaire des tics, plusieurs répétitions.\n
         Appuyez sur la touche D pour marquer le début du tic.\n
-        Appuyez sur la touche F pour marquer la fin du tic. \n
+        Appuyez sur la touche F pour marquer la fin du tic.\n
         Appuyez sur la touche T pour marquer un tic spontané.
         """,
         "background_color": color_turquoise
@@ -249,12 +247,7 @@ phase_configs = [
     },
     {
         "id": "phase4b", # Suppression des Tics
-        "title_text" : """ 
-        Suppression volontaire des tics \n
-        Appuyez sur la touche S pour marquer un tic supprimé.\n
-        Appuyez sur la touche F pour marquer la fin du tic supprimé.\n
-        Appuyez sur la touche T pour marquer un tic spontané.
-        """,
+        "title_text" : """Suppression volontaire des tics.""",
         "background_color": color_turquoise
     },  
     {
@@ -283,11 +276,14 @@ def send_trigger(code: int, pulse_ms: int = 5):
     """
     code : 1‑255 → Brain Recorder writes the same S‑number
     """
-    _port.setData(code)        # rising edge
-    pg.time.wait(pulse_ms)     # needs ≥2 ms for actiCHamp, 5 ms is safe
-    _port.setData(0)           # falling edge
-    pg.time.wait(2)
-    #print(f"[trigger] Sent {code}")
+    if _port:  # Only send if parallel port was successfully initialized
+        _port.setData(code)        # rising edge
+        pg.time.wait(pulse_ms)     # needs ≥2 ms for actiCHamp, 5 ms is safe
+        _port.setData(0)           # falling edge
+        pg.time.wait(2)
+        #print(f"[trigger] Sent {code}")
+    else:
+        print(f"Attempted to send trigger {code} but no parallel port available.")
 
 def trigger_phase_start(phase_idx, phase_id):
     """
@@ -772,7 +768,9 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
 
     # Counters
     suppressed_count = 0
+    suppresed_completed = 0
     spontaneous_count = 0
+    
 
     start_time = pg.time.get_ticks()
     running = True
@@ -792,13 +790,19 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
                 if event.key == pg.K_s:
                     log_event("key_press", "s", phase_id)
                     suppressed_count += 1
-                    feedback_text = "Tic supprimé"
+                    feedback_text = "Intention de supprimer un Tic (S)"
+                    feedback_color = color_violet
+                    feedback_start_time = now
+                elif event.key == pg.K_f:
+                    log_event("key_press", "f", phase_id)
+                    suppresed_completed += 1
+                    feedback_text = "Fin de tic supprimé (F)"
                     feedback_color = color_violet
                     feedback_start_time = now
                 elif event.key == pg.K_t:
                     log_event("key_press", "t", phase_id)
                     spontaneous_count += 1
-                    feedback_text = "Tic spontané"
+                    feedback_text = "Tic spontané (T)"
                     feedback_color = color_turquoise
                     feedback_start_time = now
 
@@ -811,7 +815,7 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
         line_spacing = 36
         for i, line in enumerate(lines):
             surf = font_title.render(line.strip(), True, color_cream)
-            rect = surf.get_rect(center=(window.get_width() // 2, 50 + i * line_spacing))
+            rect = surf.get_rect(center=(window.get_width() // 2, 30 + i * line_spacing))
             window.blit(surf, rect)
 
         # Countdown
@@ -819,16 +823,25 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
         timer_rect = timer_surf.get_rect(center=(window.get_width() // 2, window.get_height() // 2 - 50))
         window.blit(timer_surf, timer_rect)
 
-        # Counters
-        counter_text = f"Supprimés : {suppressed_count}   |   Spontanés : {spontaneous_count}"
-        counter_surf = font_feedback.render(counter_text, True, color_cream)
-        counter_rect = counter_surf.get_rect(center=(window.get_width() // 2, timer_rect.bottom + 40))
-        window.blit(counter_surf, counter_rect)
+        # Counter lines — displayed one per line
+        line1_text = f"Touche S: intentions de suppression du tic : {suppressed_count}"
+        line1_surf = font_feedback.render(line1_text, True, color_cream)
+        line1_rect = line1_surf.get_rect(center=(window.get_width() // 2, timer_rect.bottom + 40))
+        window.blit(line1_surf, line1_rect)
 
+        line2_text = f"Touche F: fin de suppression du tic : {suppresed_completed}"
+        line2_surf = font_feedback.render(line2_text, True, color_cream)
+        line2_rect = line2_surf.get_rect(center=(window.get_width() // 2, line1_rect.bottom + 30))
+        window.blit(line2_surf, line2_rect)
+
+        line3_text = f"Touche T: tics spontanés : {spontaneous_count}"
+        line3_surf = font_feedback.render(line3_text, True, color_cream)
+        line3_rect = line3_surf.get_rect(center=(window.get_width() // 2, line2_rect.bottom + 30))
+        window.blit(line3_surf, line3_rect)
         # Feedback (if visible)
         if feedback_text and now - feedback_start_time < feedback_duration:
             fb_surf = font_feedback.render(feedback_text, True, feedback_color)
-            fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, counter_rect.bottom + 40))
+            fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, line3_rect.bottom + 40))
             window.blit(fb_surf, fb_rect)
 
         pg.display.flip()
