@@ -135,8 +135,8 @@ phase_configs = [
     {
         "id": "phase0", # Activité motrice de base - Instruction
         "title_text" : "Activité motrice de base",
-        "instruction": """Veuillez appuyer sur sur touche "D" avec votre index \n
-        de la main dominante, à votre rythme. \n
+        "instruction": """Vous appuierez sur la touche "D" avec votre index \n
+        de votre main dominante, à votre rythme. \n
           \n
         Appuyez sur la touche ➡ pour commencer.""",
         "background_color": color_cream
@@ -170,16 +170,17 @@ phase_configs = [
         "title_text" : "Période de repos — Fixez la croix",
         "instruction": """
         Veuillez vous détendre.\n
-        Veuillez regarder et fixer la croix à l'écran pendant quelques instants.\n, 
-        l'écran changera automatiquement à la fin.\n
+        Vous regarderez et fixerez la croix à l'écran pendant quelques instants.\n, 
+        L'écran changera automatiquement à la fin.\n
         Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+        \n
         Appuyez sur la touche ➡ pour commencer.
         """,
         "background_color": color_cream
     },
     {
         "id": "phase1d", # EEG au repos, yeux ouverts - Countdown
-        "instruction": """ Fermez vous yeux, temps restant: \n""",
+        "instruction": """ Temps restant: \n""",
         "background_color": color_olive
     },
     {
@@ -187,11 +188,11 @@ phase_configs = [
         "title_text" : "Tics spontanés",
         "instruction": """
         Veuillez vous détendre.\n
-        Laissez vos tics se manifester naturellement pendant quelques minutes.\n
-        Ne les retenez pas et ne les provoquez pas. \n
-        - Appuyez sur la touche D dès que vous sentez une envie prémonitoire (D pour début).
-        - Appuyez sur la touche F dès que le tic est terminé (F pour fin).\n
-        Utilisez votre main dominante et l’index pour appuyer sur les touches.\n
+        Vous laisserez vos tics se manifester naturellement pendant quelques minutes.\n
+        Important : N'essayez pas de provoquer ni de supprimer vos tics volontairement.\n
+        - Vous appuierez sur la touche D dès que vous sentirez une envie prémonitoire (D pour début).
+        - Vous appuierez sur la touche F dès que le tic sera terminé (F pour fin).\n
+        Vous appuierez sur les touches avec votre index de votre main dominante.\n
         \n
         Appuyez sur la touche ➡ pour commencer.
         
@@ -201,22 +202,22 @@ phase_configs = [
     {
         "id": "phase2b", # Tics spontanés - Countdown
         "title_text" : """Laissez vos tics se manifester naturellement.\n
-        Appuyez sur D pour marquer le début.\n
-        Appuyez sur F pour marquer la fin.""",
+        Appuyez sur la touche D pour marquer le début du tic.\n
+        Appuyez sur la touche F pour marquer la fin du tic.""",
         "instruction": 
         """ Laissez vos tics se manifester naturellement""",
         "background_color": color_violet
     },    
     {
         "id": "phase3a", # Tics mimicking - Instruction
-        "title_text" : "Tics spontanés",
+        "title_text" : "Tics imités",
         "instruction": """
         Veuillez vous détendre.\n
-        Vous allez imiter 10 fois vos tics les plus fréquents.\n
-        1. Quand vous êtes prêt : appuyez sur D (début) et exécutez le tic.\n
-        2. À la fin : appuyez sur F (fin).\n
-        3. Répétez jusqu'à le nombre de tics indiqués.\n  
-        Si un tic spontané survient, appuyez sur T pour le signaler (tic).\n
+        Vous imiterez vos tics les plus fréquents.\n
+        1. Quand vous serez prêt : vous appuierez sur la tocuhe D (début) et exécuterez le tic.\n
+        2. À la fin du tic : vous appuierez sur la tocuhe F (fin).\n
+        3. Vous repeterez ceci jusqu'au nombre de tics indiqués.\n  
+        Si un tic spontané survient, appuyez sur la touche T pour le signaler (tic).\n
         \n
         Appuyez sur la touche ➡ pour commencer.
         """,   
@@ -224,21 +225,24 @@ phase_configs = [
     },
     {
         "id": "phase3b", #Tics mimicking - Countdown
-        "title_text" : """ 
+        "title_text" : "Tics imités",
+        "instruction": """
         Imitation volontaire des tics, plusieurs répétitions \n
-        Appuyez sur D pour marquer le début.\n
-        Appuyez sur F pour marquer la fin. \n
-        Appuyez sur T pour marquer un tic spontané.
+        Appuyez sur la touche D pour marquer le début du tic.\n
+        Appuyez sur la touche F pour marquer la fin du tic. \n
+        Appuyez sur la touche T pour marquer un tic spontané.
         """,
         "background_color": color_turquoise
     },  
     {
         "id": "phase4a", # Suppression des Tics - Instruction
+        "title_text" : "Suppression volontaire des tics",
         "instruction": 
             """Veuillez vous détendre.\n
-            Vous allez essayer activement de supprimer ou retenir vos tics pendant quelques minutes.\n
-            - Appuyez sur S pour signaler une intention de tic supprimée.\n
-            - Appuyez sur T pour signaler un tic spontané que vous n’avez pas réussi à supprimer.\n
+            Vous essaierez activement de supprimer ou retenir vos tics pendant quelques minutes.\n
+            - Vous appuierez sur la touche S pour signaler une intention supprimer un tic.\n
+            - Vous appuierez sur la touche F pour signaler une fin de suppresion du tic.\n
+            - Vous appuierez sur la touche T pour signaler un tic spontané que vous n’avez pas réussi à supprimer.\n
             \n
             Appuyez sur la touche ➡ pour commencer.""",
         "background_color": color_cream
@@ -247,8 +251,9 @@ phase_configs = [
         "id": "phase4b", # Suppression des Tics
         "title_text" : """ 
         Suppression volontaire des tics \n
-        Appuyez sur S pour marquer un tic supprimé.\n
-        Appuyez sur T pour marquer un tic spontané.
+        Appuyez sur la touche S pour marquer un tic supprimé.\n
+        Appuyez sur la touche F pour marquer la fin du tic supprimé.\n
+        Appuyez sur la touche T pour marquer un tic spontané.
         """,
         "background_color": color_turquoise
     },  
