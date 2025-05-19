@@ -53,15 +53,49 @@ except serial.SerialException as e:
     print("[Neopixel] Could not open serial port – LEDs disabled\n", e)
     
 #--- constants / trigger map ---
-
-TRIG_EXP_START   = 0        # experiment begins
-TRIG_KEY_MAP = {                # behavioural keys
-    'd': 21,
-    'f': 22,
-    's': 23,
-    't': 24,
-    'right': 25
+TRIG_EXP_START   = 1        # experiment begins
+TRIG_MAP = {
+    'phase_start':{
+        'start_experiment': 1,
+        'phase0': 2,
+        'phase0a': 3,
+        'phase1a': 4,
+        'phase1b': 5,
+        'phase1c': 6,
+        'phase1d': 7,
+        'phase2a': 8,
+        'phase2b': 9,
+        'phase3a': 10,
+        'phase3b': 11,
+        'phase4a': 12,
+        'phase4b': 13,
+        'end_experiment': 14
+    },
+    'key_press': {                # behavioural keys
+        'd': 21,
+        'f': 22,
+        's': 23,
+        't': 24,
+        'right': 25,
+        'esc' : 26
+    }, 
+    'visual_feedback': { # visual feedback of pressed keys
+        'd': 31,
+        'f': 32,
+        's': 33,
+        't': 34        
+    },
+    'tone_feedback':{
+        'tone_start': 41,
+        'tone_end': 42
+    },
+    'system':{
+        'window_closed': 51,
+        't0': 100
+    } 
+    
 }
+
 experiment_start_time = None # (log_event sets t = 0 *and* fires EXP_START)
 
 # Path to images files
@@ -286,48 +320,6 @@ def send_trigger(code: int, pulse_ms: int = 5):
         #print(f"[trigger] Sent {code}")
     else:
         print(f"[Attempt] -  to send trigger {code} : no parallel port available.")
-
-def trigger_phase_start(phase_idx, phase_id):
-    """
-    Fire a TTL pulse on the parallel port and logs the event.
-    """
-    # ------- TTL trigger -------
-    if phase_idx == 0: # start_experiment, welcome message
-        send_trigger_and_log(1, "start of experiment", phase_id)
-    elif phase_idx == 1: # phase0
-        send_trigger_and_log(2, "start of phase0", phase_id)
-        send_led('0') 
-    elif phase_idx == 2: # phase0a
-        send_trigger_and_log(3, "start of phase0a", phase_id)
-        send_led('2') 
-    elif phase_idx == 3: # phase1a
-        send_trigger_and_log(4, "start of phase1a", phase_id)
-    elif phase_idx == 4: # phase1b
-        send_trigger_and_log(5, "start of phase1b", phase_id)
-        send_led('4') 
-    elif phase_idx == 5: # phase1c
-        send_trigger_and_log(6, "start of phase1c", phase_id)
-    elif phase_idx == 6: # phase1d
-        send_trigger_and_log(7, "start of phase1d", phase_id)
-        send_led('6') 
-    elif phase_idx == 7: # phase2a
-        send_trigger_and_log(8, "start of phase2a", phase_id)
-    elif phase_idx == 8: # phase2b
-        send_trigger_and_log(9, "start of phase2b", phase_id)
-        send_led('8') 
-    elif phase_idx == 9: # phase3a
-        send_trigger_and_log(10, "start of phase3a", phase_id)
-    elif phase_idx == 10: # phase3b
-        send_trigger_and_log(11, "start of phase3b", phase_id)
-        send_led('10') 
-    elif phase_idx == 11: # phase4a
-        send_trigger_and_log(12, "start of phase4a", phase_id)
-    elif phase_idx == 12: # phase4b
-        send_trigger_and_log(13, "start of phase4b", phase_id)
-        send_led('12') 
-    elif phase_idx == 13: # end_experiment
-        send_trigger_and_log(14, "end of experiment", phase_id)
-        send_led('STOP') 
          
 def log_event(event_type, event_value, current_phase_id):
     """ ────────────────────────────────────────────────────────────────
@@ -347,16 +339,18 @@ def log_event(event_type, event_value, current_phase_id):
     
     if experiment_start_time is None:  # first ever event!
         experiment_start_time = time.perf_counter()
-        send_trigger(TRIG_EXP_START)   # 5 ms pulse on the LPT
+        log_event('system', 't0', 'init')   # 5 ms pulse on the LPT
 
     # --------------------------------------------------------------
-    # 2 · Optionally fire a key‑specific trigger (D / F / S / T)
+    # 2 · Fire a event‑specific triggers
+    #   Key press : (D / F / S / T)
+    #   Visual feedback after key press: (D / F / S / T)
+    #   Tone events: tone start, tone end
     # --------------------------------------------------------------
-    if event_type == 'key_press':
-        trig = TRIG_KEY_MAP.get(event_value.lower())   # returns None if key not mapped
-        if trig is not None:
-            send_trigger(trig)
-    
+    trig = TRIG_MAP.get(event_type).get(event_value.lower()) # returns None if key not mapped 
+    if trig is not None:
+        send_trigger(trig)
+
     # --------------------------------------------------------------
     # 3 · Compute elapsed time for the CSV row
     # --------------------------------------------------------------
@@ -380,16 +374,7 @@ def log_event(event_type, event_value, current_phase_id):
     # Console echo (unified format: [type] - elapsed : message)
     # --------------------------------------------------------------
     
-    """print(
-          f"[{event_type:<18}] -  f"{row['elapsed_time_seconds']:>9.3f}s  "{event_value}  ({current_phase_id})")"""
-    print(f"[{event_type}] - {row['elapsed_time_seconds']:>9.3f}s : {event_value}")
-    
-def send_trigger_and_log(code, event_value, phase_id):
-    """
-    Fire a TTL pulse on the parallel port and logs the event.
-    """
-    send_trigger(code)
-    log_event("trigger", event_value, phase_id)
+    print(f"{row['elapsed_time_seconds']:>9.3f}s - ID={current_phase_id} : [{event_type}] - {event_value}")
     
 def display_instruction(window, phase_config):
     # Fonts
@@ -453,7 +438,7 @@ def display_instruction(window, phase_config):
     pg.display.flip()
     return True
 
-def display_pushbutton_countdown(window, phase_config, current_count, total_required, label):
+def display_pushbutton_countdown(window, phase_config, current_count, total_required, label, phase_id):
     window.fill(phase_config.get("background_color", (0, 0, 0)))
 
     font = pg.font.SysFont("Segoe UI Symbol", 48)
@@ -468,6 +453,9 @@ def display_pushbutton_countdown(window, phase_config, current_count, total_requ
     # Draw text
     window.blit(text_surface, text_rect)
     pg.display.flip()
+
+    if current_count > 0:
+        log_event('visual_feedback', 'd', phase_id)
     return True # Indicate that the display happened
 
 def play_tones(sequence, *, volume=0.5, sample_rate=44100, gap_ms=30):
@@ -491,7 +479,7 @@ def display_minute_countdown(window, phase_config, duration_ms, phase_id):
     clock = pg.time.Clock()
 
     play_tones(start_seq)
-    log_event('information_display', 'tone_start', phase_id)                    
+    log_event('tone_feedback', 'tone_start', phase_id)                    
 
     start_ms   = pg.time.get_ticks()                   # 60 000 ms = 60 s
     running_cd = True
@@ -530,7 +518,7 @@ def display_minute_countdown(window, phase_config, duration_ms, phase_id):
         clock.tick(TARGET_FPS) #pg.time.delay(50)                   # ~20 fps
 
     play_tones(end_seq)
-    log_event('information_display', 'tone_end', phase_id)
+    log_event('tone_feedback', 'tone_end', phase_id)
     # ---------- fin -------------
     pg.time.wait(50)                      # laisser jouer la dernière note
 
@@ -543,7 +531,7 @@ def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
     clock = pg.time.Clock()
 
     play_tones(start_seq)
-    log_event('information_display', 'tone_start', phase_id)  
+    log_event('tone_feedback', 'tone_start', phase_id)  
     
     start_ms   = pg.time.get_ticks()
     running_cd = True
@@ -580,14 +568,11 @@ def display_cross_minute_countdown(window, phase_config, duration_ms, phase_id):
 
     # ----- bips de fin -----
     play_tones(end_seq)
-    log_event('information_display', 'tone_end', phase_id)  
+    log_event('tone_feedback', 'tone_end', phase_id)  
     pg.time.wait(50)       # laisse jouer le dernier bip
 
 def display_tic_tagging_timer(window, phase_config, duration, phase_id):
     clock = pg.time.Clock()
-
-    #play_tones(start_seq)
-    #log_event('information_display', 'tone_start', phase_id)
 
     start_ms = pg.time.get_ticks()
     running = True
@@ -609,11 +594,12 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
         remaining = max(0, duration - elapsed)
         secs_total = remaining // 1000
         mm_ss = f"{secs_total // 60}:{secs_total % 60:02d}"
+        last_key_pressed = None
 
         # --- Event handling ---
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                log_event("system_exit", "window_closed", phase_id)
+                log_event("system", "window_closed", phase_id)
                 running = False
                 return
             if event.type == pg.KEYDOWN:
@@ -622,11 +608,13 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
                     feedback_text = "Début marqué"
                     feedback_color = color_turquoise
                     feedback_timer_start = now_ms
+                    last_key_pressed = 'd'
                 elif event.key == pg.K_f:
                     log_event("key_press", "f", phase_id)
                     feedback_text = "Fin marquée"
                     feedback_color = color_olive
                     feedback_timer_start = now_ms
+                    last_key_pressed = 'f'
 
         # --- Drawing ---
         window.fill(bg_color)
@@ -657,6 +645,9 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
             fb_surf = font_feedback.render(feedback_text, True, feedback_color)
             fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, timer_rect.bottom + 40))
             window.blit(fb_surf, fb_rect)
+            if last_key_pressed == 'd' or last_key_pressed == 'f':
+                log_event('visual_feedback', last_key_pressed, phase_id)
+                last_key_pressed = None
 
         pg.display.flip()
 
@@ -664,8 +655,6 @@ def display_tic_tagging_timer(window, phase_config, duration, phase_id):
             running = False
         clock.tick(TARGET_FPS) #pg.time.delay(30)
 
-    #play_tones(end_seq)
-    #log_event('information_display', 'tone_end', phase_id)
     pg.time.wait(50)
 
 def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_total_required):
@@ -689,6 +678,8 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
     mimicked_tic_count = 0
     awaiting_f = False  # Only count D-F pairs
     running = True
+    
+    last_key_pressed = None
 
     while running:
         now_ms = pg.time.get_ticks()
@@ -696,7 +687,7 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
         # --- Event handling ---
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                log_event("system_exit", "window_closed", phase_id)
+                log_event("system", "window_closed", phase_id)
                 return  # exit early
 
             if event.type == pg.KEYDOWN:
@@ -706,21 +697,23 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
                     feedback_color = color_violet
                     feedback_start_time = now_ms
                     awaiting_f = True
+                    last_key_pressed = 'd'
                     
                 elif event.key == pg.K_f:
                     log_event("key_press", "f", phase_id)
                     feedback_text = "Fin marquée"
                     feedback_color = color_olive
                     feedback_start_time = now_ms
+                    last_key_pressed = 'f'
                     if awaiting_f:
                         mimicked_tic_count += 1
                         awaiting_f = False
-                        log_event("tic_mimicked_count", str(mimicked_tic_count), phase_id)
                 elif event.key == pg.K_t:
                     log_event("key_press", "t", phase_id)
                     feedback_text = "Tic spontané enregistré"
                     feedback_color = color_cream
                     feedback_start_time = now_ms
+                    last_key_pressed = 't'
 
         # --- Drawing ---
         window.fill(bg_color)
@@ -746,6 +739,9 @@ def display_mimicked_tics_phase(window, phase_config, phase_id, mimicked_tic_tot
             fb_surf = font_feedback.render(feedback_text, True, feedback_color)
             fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, counter_rect.bottom + 40))
             window.blit(fb_surf, fb_rect)
+            if last_key_pressed in ["d", "f", "t"]:
+                log_event('visual_feedback', last_key_pressed, phase_id)
+                last_key_pressed = None
 
         pg.display.flip()
         clock.tick(TARGET_FPS) #pg.time.delay(30)
@@ -781,6 +777,7 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
 
     start_time = pg.time.get_ticks()
     running = True
+    last_key_pressed = None
 
     while running:
         now = pg.time.get_ticks()
@@ -791,7 +788,7 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
         # --- Event handling ---
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                log_event("system_exit", "window_closed", phase_id)
+                log_event("system", "window_closed", phase_id)
                 return
 
             if event.type == pg.KEYDOWN:
@@ -801,21 +798,23 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
                     feedback_text = "Intention de supprimer un Tic (S)"
                     feedback_color = color_violet
                     feedback_start_time = now
-                    send_trigger_and_log(31, "feedback_s_shown", phase_id) # to analyze Visual ERP marker - response to action confirmation
+                    last_key_pressed = 's'
+                    
                 elif event.key == pg.K_f:
                     log_event("key_press", "f", phase_id)
                     suppresed_completed += 1
                     feedback_text = "Fin de tic supprimé (F)"
                     feedback_color = color_violet
                     feedback_start_time = now
-                    send_trigger_and_log(32, "feedback_f_shown", phase_id)
+                    last_key_pressed = 'f'
+                    
                 elif event.key == pg.K_t:
                     log_event("key_press", "t", phase_id)
                     spontaneous_count += 1
                     feedback_text = "Tic spontané (T)"
                     feedback_color = color_turquoise
                     feedback_start_time = now
-                    send_trigger_and_log(33, "feedback_t_shown", phase_id)
+                    last_key_pressed = 't'
 
         # --- Drawing ---
         window.fill(bg_color)
@@ -854,6 +853,9 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
             fb_surf = font_feedback.render(feedback_text, True, feedback_color)
             fb_rect = fb_surf.get_rect(center=(window.get_width() // 2, line3_rect.bottom + 40))
             window.blit(fb_surf, fb_rect)
+            if last_key_pressed in ["s","f","t"]:
+                log_event("visual_feedback", last_key_pressed, phase_id)
+                last_key_pressed = None
 
         pg.display.flip()
         clock.tick(TARGET_FPS) #pg.time.delay(30)
@@ -862,8 +864,7 @@ def display_suppression_phase(window, phase_config, phase_id, duration_ms):
             running = False
 
     pg.time.wait(50)
-    log_event("information_display", "suppression_phase_end", phase_id)
-
+    
 def wait_for_key_press(target_key, phase_id):
     """
     Waits for the user to press a specific key.
@@ -903,38 +904,37 @@ try:
     while running and current_phase_index < len(phase_configs):
         cfg = phase_configs[current_phase_index] 
         phase_id = cfg["id"]
+        log_event('phase_start', phase_id, current_phase_index )
         
         # ----------------  A) START-EXPERIMENT PHASE  -----------------
         if phase_id == "start_experiment": # *ok*
-            trigger_phase_start(0, phase_id) 
             display_instruction(window, cfg)           
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
             current_phase_index += 1 # Move to the next phase
             
         # ----------------  PHASE 0: BASELINE MOTOR ACTIVITY  -----------------       
         elif phase_id == "phase0": # Activité motrice de base - Instruction  *ok*
-            trigger_phase_start(1, phase_id) 
             display_instruction(window, cfg)
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
             current_phase_index += 1 # Move to the next phase   
         
         elif phase_id == "phase0a": # Activité motrice de base - Countdown *ok*
-            trigger_phase_start(2, phase_id)
             key_press_count = 0 # Reset key press count
             counting = True # Flag to indicate if we are counting button presses
-            #log_event('information_display', 'counter_starts', phase_id) 
             
+            display_pushbutton_countdown(window, cfg, key_press_count, KEY_TOTAL_REQUIRED, phase0_label, phase_id) # Display the countdown
             while counting and running:
-                display_pushbutton_countdown(window, cfg, key_press_count, KEY_TOTAL_REQUIRED, phase0_label) # Display the countdown
                 
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
-                        log_event("system_exit", "window_closed", phase_id)
+                        log_event("system", "window_closed", phase_id)
                         running = False
                     elif event.type == pg.KEYDOWN:
                         if event.key == pg.K_d:
                             log_event('key_press', pg.key.name(event.key), phase_id)
                             key_press_count += 1
+                            display_pushbutton_countdown(window, cfg, key_press_count, KEY_TOTAL_REQUIRED, phase0_label, phase_id) # Display the countdown
+
                         else:
                             pass  # Ignore all other keys
                         if key_press_count >= KEY_TOTAL_REQUIRED:
@@ -943,85 +943,68 @@ try:
                             
         # ---------------- PHASE 1: BASELINE MOTOR ACTIVITY  -----------------       
         elif phase_id == "phase1a": # EEG au repos, yeux fermées - Instruction *OK*
-            trigger_phase_start(3, phase_id)
             display_instruction(window, cfg)
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press      
             current_phase_index += 1 # Move to the next phase
             
         elif phase_id == "phase1b":   # EEG au repos, yeux fermées - Countdown *OK*              
-            trigger_phase_start(4, phase_id)           # 12
             display_minute_countdown(window, cfg, REST_EYES_CLOSED_MS, phase_id) # 1 minute countdown
             current_phase_index += 1 # Move to the next phase   
             
         elif phase_id == "phase1c": # EEG au repos, yeux ouverts - Instruction *OK*
-            trigger_phase_start(5, phase_id)
             display_instruction(window, cfg)
-            #log_event('instruction_display', 'instruction_message', phase_id)
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press 
             current_phase_index += 1
 
         elif phase_id == "phase1d": # EEG au repos, yeux ouverts - Countdown   *OK*            
-            trigger_phase_start(6, phase_id)
             display_cross_minute_countdown(window, cfg, REST_EYES_OPEN_MS, phase_id) #  minute countdown
             current_phase_index += 1 # Move to the next phase 
             
         # ---------------- PHASE 2: SPONTANEOUS TICS  -----------------   
         elif phase_id == "phase2a": # Tics spontanés - Instruction *OK* 
-            trigger_phase_start(7, phase_id)
             display_instruction(window, cfg)
-            #log_event('instruction_display', 'instruction_message', phase_id)
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press     
             current_phase_index += 1
             
         elif phase_id == "phase2b":  # Tics spontanés              
-            trigger_phase_start(8, phase_id)
             display_tic_tagging_timer(window, cfg, SPONT_TICS_MS , phase_id)
             current_phase_index += 1 # Move to the next phase 
             
         # ---------------- PHASE 3: MIMICKING TICS  -----------------
         elif phase_id == "phase3a": # Tics mimicking - Instruction *OK* 
-            trigger_phase_start(9, phase_id)
             display_instruction(window, cfg) 
-            #log_event('instruction_display', 'instruction_message', phase_id)     
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
             current_phase_index += 1
             
         elif phase_id == "phase3b": # Tics mimicking 
-            trigger_phase_start(10, phase_id)
             display_mimicked_tics_phase(window, cfg, phase_id, MIMICKED_TOTAL_REQUIRED)
             current_phase_index += 1 # Move to the next phase 
         
         # ---------------- PHASE 4: TIC SUPRESSION  -----------------
         elif phase_id == "phase4a": # Suppression des Tics - Instruction
-            trigger_phase_start(11, phase_id)
             display_instruction(window, cfg) 
-            #log_event('instruction_display', 'instruction_message', phase_id)  
             running = wait_for_key_press(pg.K_RIGHT, phase_id) # Wait for right arrow key press
             current_phase_index += 1
             
         elif phase_id == "phase4b":
-            trigger_phase_start(12, phase_id) # Suppression des Tics - Countdown *ok*
-            start_time = pg.time.get_ticks() # Start time for the countdown
             display_suppression_phase(window, cfg, phase_id, SUPPRESSION_MS)
             current_phase_index += 1 # Move to the next phase 
             
         # ---------------- B: END OF EXPERIMENT  -----------------                       
         elif phase_id == "end_experiment":
-            trigger_phase_start(13, phase_id)
             display_instruction(window, cfg)
-            #log_event('instruction_display', 'instruction_message', phase_id)  
         
             waiting_for_exit = True
             while waiting_for_exit and running:
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
-                        log_event("system_exit", "window_closed", phase_id)
+                        log_event("system", "window_closed", phase_id)
                         running = False
                         waiting_for_exit = False
                     if event.type == pg.KEYDOWN:
                         if event.key == pg.K_ESCAPE:
                             send_led('STOP')           #  <‑‑ lights red
-                            log_event("key_press", "End of experiment", phase_id)
+                            log_event("key_press", "esc", phase_id)
                             running = False
                             waiting_for_exit = False
                             
